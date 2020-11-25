@@ -1,13 +1,17 @@
 # Svelte Reactive Form
+A better declarative way of form validation. 
 
+## Installation and Usage
 
-### Installation
-A better form solution which 
 ```bash
-npm install svelte-reform
-yarn add svelte-reform
+npm install svelte-reactive-form
+```
+or
+```bash
+yarn add svelte-reactive-form
 ```
 
+## Features
 - Simple
 - TypeScript as first class citizen
 - Custom validation
@@ -15,26 +19,21 @@ yarn add svelte-reform
 - Flexible
 - Configurable
 
-
-- typescript
-- validation / support custom validation
-- performance (no extra render)
-- error handling
-- custom validation
-
-APIs:
-1. Using native HTML
+## How to use
 ```svelte
 <script lang="ts">
   import { useForm, Field, defineRule } from "svelte-reactive-form";
+  import { required } from "svelte-reactive-form/rules";
 
+  defineRule("required", required);
   defineRule("phoneNo", (val: any) => {
     return /[0-9]+/.test(val) || "invalid phone number format";
   });
 
   const form$ = useForm({});
+  const { field, register, setValue, control, onSubmit } = form$;
 
-  const { field, control, onSubmit } = form$;
+  register("custom-field", { rules: ["required"] });
 
   const handleSubmit = (v) => {
     console.log(v)
