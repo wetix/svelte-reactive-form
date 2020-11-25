@@ -1,0 +1,9 @@
+/node_modules/
+/public/build/
+
+.DS_Store
+lib
+package-lock.json
+yarn.lock
+public
+types
