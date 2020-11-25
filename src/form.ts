@@ -40,6 +40,17 @@ export const useForm = (
     [Writable<FieldState>, ValidationRule[]]
   > = new Map();
 
+  // global state for form
+  const form$ = writable<FormState>({
+    dirty: false,
+    touched: false,
+    pending: false,
+    valid: false,
+  });
+
+  // errors should be private variable
+  const errors$ = writable<Record<string, any>>({});
+
   const _flattenObject = (obj: object, path: string | null = null): object =>
     Object.keys(obj).reduce((acc: object, key: string, idx: number) => {
       const newPath = [path, key].filter(Boolean).join(".");
@@ -49,47 +60,6 @@ export const useForm = (
     }, {});
 
   const flatCfg = _flattenObject(config);
-
-  // global state for form
-  const form$ = writable<FormState>({
-    dirty: false,
-    touched: false,
-    pending: false,
-    valid: false,
-  });
-
-  const _validate = (name: string, value: any): Promise<any> => {
-    const promises: Promise<ValidationResult>[] = [];
-    const [store$, validators] = cache.get(name);
-    // const state$ = get(store$);
-    // if (!state$.dirty) {
-    //   return Promise.resolve();
-    // }
-    store$.update((v: FieldState) =>
-      Object.assign(v, { dirty: true, pending: true })
-    );
-    for (let j = 0, len = validators.length; j < len; j++) {
-      const { validate, params } = validators[j];
-      promises.push(validate(value, params));
-    }
-    return Promise.all(promises)
-      .then((result: ValidationResult[]) => {
-        const errors = result.filter(
-          (v: ValidationResult) => v !== true
-        ) as string[];
-        const valid = errors.length === 0;
-        store$.update((v: FieldState) =>
-          Object.assign(v, { pending: false, valid, errors })
-        );
-        setError(name, errors);
-      })
-      .catch(() => {
-        store$.update((v) => Object.assign(v, { pending: false }));
-      });
-  };
-
-  // errors should be private variable
-  const errors$ = writable<Record<string, any>>({});
 
   const _strToValidator = (rule: string): ValidationRule => {
     const params = rule.split(/:/g);
@@ -167,13 +137,21 @@ export const useForm = (
     };
   };
 
+  const unregister = (path: string) => {
+    if (cache.has(path)) {
+      // TODO: clear subscribe pipe
+      cache.delete(path);
+    }
+  };
+
   const setValue = (path: string, value: any): void => {
     if (cache.has(path)) {
       const [store$, validators] = cache.get(path);
       if (opts.validateOnChange && validators.length > 0) {
         _validate(path, value);
+      } else {
+        store$.update((v) => Object.assign(v, { dirty: true, value }));
       }
-      store$.update((v) => Object.assign(v, { dirty: true, value }));
     } else {
       cache.set(path, [
         writable<FieldState>(
@@ -212,7 +190,7 @@ export const useForm = (
     node: HTMLInputElement,
     option: FieldOption = { rules: [] }
   ) => {
-    const parentNode = node;
+    // const parentNode = node;
     while (!["input", "select", "textarea"].includes(node.type)) {
       // TODO: change to select, textarea etc
       const nodes = node.getElementsByTagName("input");
@@ -222,6 +200,7 @@ export const useForm = (
     const { name } = node;
     if (name === "") console.error("[svelte-reactive-form] empty field name");
     const state$ = register(node.name, option.rules);
+
     let onChange = (e: Event) => {
       setValue(name, (e.currentTarget as HTMLInputElement).value);
     };
@@ -258,7 +237,6 @@ export const useForm = (
       update(v: FieldOption) {
         // if option updated, re-register the validation rules
         register(node.name, v.rules);
-        console.log("udpate =>", v);
       },
       destroy() {
         node.removeEventListener("change", onChange);
@@ -283,6 +261,36 @@ export const useForm = (
       }
     }
     return cb(data, get(errors$), e);
+  };
+
+  const _validate = (name: string, value: any): Promise<any> => {
+    const promises: Promise<ValidationResult>[] = [];
+    const [store$, validators] = cache.get(name);
+    // const state$ = get(store$);
+    // if (!state$.dirty) {
+    //   return Promise.resolve();
+    // }
+    store$.update((v: FieldState) =>
+      Object.assign(v, { dirty: true, pending: true, value })
+    );
+    for (let i = 0, len = validators.length; i < len; i++) {
+      const { validate, params } = validators[i];
+      promises.push(validate(value, params));
+    }
+    return Promise.all(promises)
+      .then((result: ValidationResult[]) => {
+        const errors = result.filter(
+          (v: ValidationResult) => v !== true
+        ) as string[];
+        const valid = errors.length === 0;
+        store$.update((v: FieldState) =>
+          Object.assign(v, { pending: false, valid, errors })
+        );
+        setError(name, errors);
+      })
+      .catch(() => {
+        store$.update((v) => Object.assign(v, { pending: false }));
+      });
   };
 
   const validate = async (name?: string | string[]) =>
@@ -356,8 +364,9 @@ export const useForm = (
       subscribe: errors$.subscribe,
     },
     field: useField,
-    getValue,
     register,
+    unregister,
+    getValue,
     onSubmit,
     setValue,
     setError,

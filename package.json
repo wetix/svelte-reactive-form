@@ -1,11 +1,12 @@
 {
   "name": "svelte-reactive-form",
-  "version": "0.1.0-beta",
+  "version": "0.1.2-beta",
   "description": "",
   "author": "si3nloong <sianloong90@gmail.com>",
   "homepage": "",
   "license": "MIT",
-  "main": "lib/cjs/index.js",
+  "main": "lib/index.js",
+  "cjs": "lib/cjs/index.js",
   "module": "lib/esm5/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
@@ -19,7 +20,10 @@
   ],
   "files": [],
   "scripts": {
+    "dev": "rollup --config rollup.dev.config.js -w",
+    "start": "sirv public --port 5500",
     "build": "rollup -c",
+    "prepublishOnly": "npm run tsd && npm run build",
     "validate": "svelte-check",
     "tsd": "tsc ./src/*.ts --declaration --emitDeclarationOnly --outDir types"
   },
@@ -28,19 +32,18 @@
     "@rollup/plugin-node-resolve": "^10.0.0",
     "@rollup/plugin-typescript": "^6.1.0",
     "@tsconfig/svelte": "^1.0.10",
+    "camelcase": "^6.2.0",
     "rollup": "^2.33.3",
     "rollup-plugin-css-only": "^3.0.0",
     "rollup-plugin-livereload": "^2.0.0",
     "rollup-plugin-svelte": "^7.0.0",
     "rollup-plugin-terser": "^7.0.2",
+    "sirv-cli": "^1.0.8",
     "svelte": "^3.30.0",
     "svelte-check": "^1.1.17",
     "svelte-preprocess": "^4.6.1",
     "tslib": "^2.0.3",
     "typescript": "^4.1.2"
-  },
-  "dependencies": {
-    "sirv-cli": "^1.0.8"
   },
   "peerDependencies": {
     "svelte": "^3.29.0"
