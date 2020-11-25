@@ -58,13 +58,13 @@ export const useForm = (
     valid: false,
   });
 
-  const _validate = async (name: string, value: any): Promise<any> => {
+  const _validate = (name: string, value: any): Promise<any> => {
     const promises: Promise<ValidationResult>[] = [];
     const [store$, validators] = cache.get(name);
-    const state$ = get(store$);
-    if (!state$.dirty) {
-      return;
-    }
+    // const state$ = get(store$);
+    // if (!state$.dirty) {
+    //   return Promise.resolve();
+    // }
     store$.update((v: FieldState) =>
       Object.assign(v, { dirty: true, pending: true })
     );
@@ -230,12 +230,12 @@ export const useForm = (
     if (cache.has(node.name)) {
       const [store$, _] = cache.get(node.name);
       onChange = (e: Event) => {
-        store$.update((v) => Object.assign(v, { dirty: true }));
+        // store$.update((v) => Object.assign(v, { dirty: true }));
         setValue(name, (e.currentTarget as HTMLInputElement).value);
       };
 
       onBlur = (e: Event) => {
-        setTouched(node.name, true);
+        // setTouched(node.name, true);
       };
 
       node.addEventListener("blur", onBlur, { once: true });
@@ -251,29 +251,15 @@ export const useForm = (
     }
 
     const unsubscribe = state$.subscribe((v: FieldState) => {
-      if (v.pending) {
-        parentNode.classList.add("pending");
-      } else {
-        parentNode.classList.remove("pending");
-      }
-      if (v.valid) {
-        parentNode.classList.add("valid");
-      } else {
-        parentNode.classList.remove("valid");
-      }
-      if (v.touched) {
-        parentNode.classList.add("touched");
-      } else {
-        parentNode.classList.remove("touched");
-      }
-      if (v.dirty) {
-        parentNode.classList.add("dirty");
-      } else {
-        parentNode.classList.remove("dirty");
-      }
+      console.log(JSON.stringify(v));
     });
 
     return {
+      update(v: FieldOption) {
+        // if option updated, re-register the validation rules
+        register(node.name, v.rules);
+        console.log("udpate =>", v);
+      },
       destroy() {
         node.removeEventListener("change", onChange);
         node.removeEventListener("input", onChange);

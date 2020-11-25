@@ -37,11 +37,17 @@ export type RuleExpression =
   | Record<string, Validator>
   | Record<string, any>;
 
+export type FieldOption = {
+  rules: RuleExpression;
+};
+
 export type Form = {
   control: object;
+  field: (node: HTMLElement, opt: FieldOption) => void;
   register: (path: string, rules: RuleExpression) => Readable<FieldState>;
   setValue: (path: string, value: any) => void;
   setTouched: (path: string, state: boolean) => void;
+  setError: (path: string, values: string[]) => void;
   reset: (values: Fields) => void;
 };
 
@@ -50,10 +56,6 @@ export type FormState = {
   dirty: boolean;
   touched: boolean;
   valid: boolean;
-};
-
-export type FieldOption = {
-  rules: RuleExpression;
 };
 
 export type FieldState = {
