@@ -15,7 +15,7 @@ export default {
       name: camelCase(pkg.name),
       file: pkg.main,
     },
-    { file: pkg.cjs, format: "cjs" },
+    { file: pkg.browser, format: "cjs" },
     { file: pkg.module, format: "es" },
   ],
   plugins: [
