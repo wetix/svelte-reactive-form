@@ -58,6 +58,11 @@ yarn add svelte-reactive-form
 ## API
 Check out the [API](https://github.com/wetix/svelte-reactive-form/blob/master/docs/API.md) documentation for using:
 
+## Sponsors
 
+<img src="https://asset.wetix.my/images/logo/wetix.png" alt="WeTix" width="240px">
+
+## License
+[MIT](https://github.com/wetix/svelte-reactive-form/blob/master/LICENSE)
 
 Inspired by (react-hook-form)[https://react-hook-form.com], you may consider this as svelte-hook-form.
