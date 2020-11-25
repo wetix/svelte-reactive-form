@@ -1,5 +1,5 @@
 # Svelte Reactive Form
-A better declarative way of form validation. 
+> A better version of form validation. 
 
 ## Installation and Usage
 
@@ -65,4 +65,4 @@ Check out the [API](https://github.com/wetix/svelte-reactive-form/blob/master/do
 ## License
 [MIT](https://github.com/wetix/svelte-reactive-form/blob/master/LICENSE)
 
-Inspired by (react-hook-form)[https://react-hook-form.com], you may consider this as svelte-hook-form.
+Inspired by [react-hook-form](https://react-hook-form.com/).
