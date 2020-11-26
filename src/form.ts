@@ -60,6 +60,7 @@ export const useForm = (
     }, {});
 
   const flatCfg = _flattenObject(config);
+  console.log("config =>", flatCfg);
 
   const _strToValidator = (rule: string): ValidationRule => {
     const params = rule.split(/:/g);
@@ -133,6 +134,9 @@ export const useForm = (
     cache.set(path, [store$, ruleExprs]);
 
     return {
+      setValue: (value) => {
+        setValue(path, value);
+      },
       subscribe: store$.subscribe,
     };
   };
@@ -186,10 +190,8 @@ export const useForm = (
     return null;
   };
 
-  const useField = (
-    node: HTMLInputElement,
-    option: FieldOption = { rules: [] }
-  ) => {
+  const useField = (node: HTMLInputElement, option: FieldOption) => {
+    option = Object.assign({ rules: [], defaultValue: "" }, option);
     // const parentNode = node;
     while (!["input", "select", "textarea"].includes(node.type)) {
       // TODO: change to select, textarea etc
@@ -229,9 +231,12 @@ export const useForm = (
       }
     }
 
-    const unsubscribe = state$.subscribe((v: FieldState) => {
-      console.log(JSON.stringify(v));
-    });
+    let unsubscribe;
+    if (option.onChange) {
+      unsubscribe = state$.subscribe((v: FieldState) => {
+        option.onChange(v, node);
+      });
+    }
 
     return {
       update(v: FieldOption) {
@@ -242,7 +247,7 @@ export const useForm = (
         node.removeEventListener("change", onChange);
         node.removeEventListener("input", onChange);
         node.removeEventListener("blur", onBlur);
-        unsubscribe();
+        unsubscribe && unsubscribe();
       },
     };
   };
