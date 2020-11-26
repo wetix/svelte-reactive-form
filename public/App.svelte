@@ -10,12 +10,7 @@
     return /[0-9]+/.test(val) || "invalid phone number format";
   });
 
-  const form$ = useForm(
-    {},
-    {
-      validateOnChange: true,
-    }
-  );
+  const form$ = useForm({});
   const { field, register, setValue, control, onSubmit } = form$;
 
   const state$ = register("custom_field", ["required", "minLength:10"]);

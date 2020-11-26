@@ -20,14 +20,18 @@
 
   let value = defaultValue;
   const onChange = (e: any) => {
-    if (e instanceof InputEvent) {
+    if (e.target) {
       const target = e.target as HTMLInputElement;
+      value = target.value;
+    } else if (e.currentTarget) {
+      const target = e.currentTarget as HTMLInputElement;
       value = target.value;
     } else if (e instanceof CustomEvent) {
       value = e.detail;
     } else {
       value = e;
     }
+    console.log(`setValue ${name}`, value);
     setValue(name, value);
   };
 
