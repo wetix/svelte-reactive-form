@@ -31,7 +31,6 @@
     } else {
       value = e;
     }
-    console.log(`setValue ${name}`, value);
     setValue(name, value);
   };
 
