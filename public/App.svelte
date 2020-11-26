@@ -10,12 +10,7 @@
     return /[0-9]+/.test(val) || "invalid phone number format";
   });
 
-  const form$ = useForm(
-    {},
-    {
-      validateOnChange: true,
-    }
-  );
+  const form$ = useForm({});
   const { field, register, setValue, control, onSubmit } = form$;
 
   const state$ = register("custom_field", ["required", "minLength:10"]);
@@ -88,6 +83,22 @@
       <div>Pending :{pending}</div>
       <div>Touched :{touched}</div>
       <div>Value :{value}</div>
+    </Field>
+  </div>
+  <div>
+    <Field
+      {control}
+      name="name2"
+      rules={{ required: true }}
+      let:errors
+      let:value
+      let:onChange>
+      <Component {onChange} {value} />
+      <div>Error :{JSON.stringify(errors)}</div>
+      <div>Value :{value}</div>
+      {#each errors as item}
+        <div>{item}</div>
+      {/each}
     </Field>
   </div>
   <div>

@@ -1,26 +1,30 @@
 <script lang="ts">
-  import type { Readable } from "svelte/store";
+  import { onDestroy } from "svelte";
   import { get } from "svelte/store";
+  import type { Readable } from "svelte/store";
 
-  import type { Form, RuleExpression } from "../types";
+  import type { FormControl, RuleExpression } from "../types";
 
   export let name = "";
   export let defaultValue = "";
-  export let control: Readable<Form>;
+  export let control: Readable<FormControl>;
   export let rules: RuleExpression = "";
   export let type: "hidden" | "text" = "hidden";
 
-  const form = get<Form>(control);
+  const form = get<FormControl>(control);
   if (!form) console.error("[svelte-reactive-form] Missing form control");
-  const { register, setValue, setTouched } = form;
+  const { register, unregister, setValue, setTouched } = form;
 
   // reactive state
   const state$ = register(name, rules);
 
   let value = defaultValue;
   const onChange = (e: any) => {
-    if (e instanceof InputEvent) {
+    if (e.target) {
       const target = e.target as HTMLInputElement;
+      value = target.value;
+    } else if (e.currentTarget) {
+      const target = e.currentTarget as HTMLInputElement;
       value = target.value;
     } else if (e instanceof CustomEvent) {
       value = e.detail;
@@ -33,9 +37,13 @@
   const onBlur = () => {
     setTouched(name, true);
   };
+
+  onDestroy(() => {
+    unregister(name);
+  });
 </script>
 
-<span>
+<div>
   <input {name} {type} on:input value={$state$.value} />
   <slot
     pending={$state$.pending}
@@ -46,4 +54,4 @@
     value={$state$.value}
     {onChange}
     {onBlur} />
-</span>
+</div>

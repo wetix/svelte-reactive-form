@@ -1,10 +1,14 @@
 {
   "compilerOptions": {
+    "rootDir": "./src",
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "outDir": ".",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "types": ["jest", "node", "svelte"]
   },
   "extends": "@tsconfig/svelte/tsconfig.json",
   "include": ["src/**/*", "index.d.ts", "public/main.js"],
-  "exclude": ["node_modules/*", "__sapper__/*", "public/*"]
+  "exclude": ["node_modules/*", "__sapper__/*", "public/*", "*.d.ts"]
 }

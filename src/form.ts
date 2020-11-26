@@ -2,7 +2,7 @@ import { writable, get, readable } from "svelte/store";
 import type { Writable } from "svelte/store";
 
 import { resolveRule } from "./rule";
-import { isObject } from "./internal/assertions";
+import { isObject } from "./assertions";
 import toPromise from "./to_promise";
 import type {
   Config,
@@ -15,6 +15,9 @@ import type {
   FormState,
   ValidationResult,
   ResetFormOption,
+  FormControl,
+  Form,
+  Fields,
 } from "./types";
 
 const defaultFieldState = {
@@ -27,9 +30,9 @@ const defaultFieldState = {
 };
 
 export const useForm = (
-  config?: Config,
+  config: Config = {},
   opts: FormOption = { validateOnChange: false }
-) => {
+): Form => {
   // cache for form fields
   const cache: Map<
     string,
@@ -56,7 +59,6 @@ export const useForm = (
     }, {});
 
   const flatCfg = _flattenObject(config);
-  console.log("config =>", flatCfg);
 
   const _strToValidator = (rule: string): ValidationRule => {
     const params = rule.split(/:/g);
@@ -317,7 +319,7 @@ export const useForm = (
       return resolve({ data: { [fields]: value }, errors: get(errors$) });
     });
 
-  const reset = (values: Record<string, any>, opts?: ResetFormOption) => {
+  const reset = (values: Fields, opts?: ResetFormOption) => {
     const options = Object.assign(opts, {
       dirtyFields: false,
       errors: false,
@@ -348,16 +350,15 @@ export const useForm = (
   };
 
   return {
-    control: readable(
+    control: readable<FormControl>(
       {
         register,
+        unregister,
         setValue,
         getValue,
         setError,
-        reset,
-        validate,
-        onSubmit,
         setTouched,
+        reset,
       },
       () => {}
     ),
@@ -368,12 +369,12 @@ export const useForm = (
     field: useField,
     register,
     unregister,
-    getValue,
-    onSubmit,
     setValue,
+    getValue,
     setError,
+    setTouched,
+    onSubmit,
     reset,
     validate,
-    setTouched,
   };
 };
