@@ -1,5 +1,4 @@
-import { setContext } from "svelte";
-import { writable, get } from "svelte/store";
+import { writable, get, readable } from "svelte/store";
 import type { Writable } from "svelte/store";
 
 import { resolveRule } from "./rule";
@@ -32,7 +31,7 @@ export const useForm = (
   opts: FormOption = { validateOnChange: false }
 ) => {
   // context key
-  const KEY = {};
+  // const KEY = {};
 
   // cache for form fields
   const cache: Map<
@@ -351,19 +350,30 @@ export const useForm = (
     }
   };
 
-  setContext(KEY, {
-    register,
-    setValue,
-    getValue,
-    setError,
-    reset,
-    validate,
-    onSubmit,
-    setTouched,
-  });
+  // setContext(KEY, {
+  //   register,
+  //   setValue,
+  //   getValue,
+  //   setError,
+  //   reset,
+  //   validate,
+  //   onSubmit,
+  //   setTouched,
+  // });
 
   return {
-    control: KEY,
+    control: readable({}, (set) => {
+      set({
+        register,
+        setValue,
+        getValue,
+        setError,
+        reset,
+        validate,
+        onSubmit,
+        setTouched,
+      });
+    }),
     subscribe: form$.subscribe,
     errors: {
       subscribe: errors$.subscribe,
