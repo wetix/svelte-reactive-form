@@ -30,9 +30,6 @@ export const useForm = (
   config?: Config,
   opts: FormOption = { validateOnChange: false }
 ) => {
-  // context key
-  // const KEY = {};
-
   // cache for form fields
   const cache: Map<
     string,
@@ -350,20 +347,9 @@ export const useForm = (
     }
   };
 
-  // setContext(KEY, {
-  //   register,
-  //   setValue,
-  //   getValue,
-  //   setError,
-  //   reset,
-  //   validate,
-  //   onSubmit,
-  //   setTouched,
-  // });
-
   return {
-    control: readable({}, (set) => {
-      set({
+    control: readable(
+      {
         register,
         setValue,
         getValue,
@@ -372,8 +358,9 @@ export const useForm = (
         validate,
         onSubmit,
         setTouched,
-      });
-    }),
+      },
+      () => {}
+    ),
     subscribe: form$.subscribe,
     errors: {
       subscribe: errors$.subscribe,
