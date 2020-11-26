@@ -1,7 +1,5 @@
-"use strict";
-
-const svelteReactiveForm = require("..");
+// const svelteReactiveForm = require("..");
 
 describe("svelte-reactive-form", () => {
-  it("needs tests");
+  it("needs tests", () => {});
 });

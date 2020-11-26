@@ -1,22 +1,23 @@
 <script lang="ts">
-  import { getContext } from "svelte";
+  import type { Readable } from "svelte/store";
+  import { get } from "svelte/store";
 
   import type { Form, RuleExpression } from "../types";
 
   export let name = "";
-  export let control = {};
+  export let defaultValue = "";
+  export let control: Readable<Form>;
   export let rules: RuleExpression = "";
   export let type: "hidden" | "text" = "hidden";
 
-  const form = getContext<Form>(control);
+  const form = get<Form>(control);
   if (!form) console.error("[svelte-reactive-form] Missing form control");
   const { register, setValue, setTouched } = form;
 
   // reactive state
   const state$ = register(name, rules);
 
-  let value = "";
-
+  let value = defaultValue;
   const onChange = (e: any) => {
     if (e instanceof InputEvent) {
       const target = e.target as HTMLInputElement;

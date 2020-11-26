@@ -39,6 +39,8 @@ export type RuleExpression =
 
 export type FieldOption = {
   rules: RuleExpression;
+  defaultValue?: any;
+  onChange: (v: FieldState, node: HTMLElement) => void;
 };
 
 export type Form = {

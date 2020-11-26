@@ -5,5 +5,9 @@
 lib
 package-lock.json
 yarn.lock
-public
 types
+/index.cjs.js
+/index.esm.js
+/index.js
+/rules
+yarn-error.log
