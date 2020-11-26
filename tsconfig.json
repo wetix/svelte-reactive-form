@@ -1,4 +1,10 @@
 {
+  "compilerOptions": {
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "types": ["jest", "node", "svelte"]
+  },
+  "noImplicitAnyForClassMembers": false,
   "extends": "@tsconfig/svelte/tsconfig.json",
   "include": ["src/**/*", "index.d.ts", "public/main.js"],
   "exclude": ["node_modules/*", "__sapper__/*", "public/*"]
