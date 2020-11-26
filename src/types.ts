@@ -70,6 +70,7 @@ export interface Form extends Readable<FormState>, FormControl {
 
 export type FormState = {
   pending: boolean;
+  submitting: boolean;
   dirty: boolean;
   touched: boolean;
   valid: boolean;

@@ -44,14 +44,14 @@
 </script>
 
 <div>
-  <input {name} {type} on:input value={$state$.value} />
+  <input {name} {type} on:input {value} />
   <slot
     pending={$state$.pending}
     valid={$state$.valid}
     errors={$state$.errors}
     dirty={$state$.dirty}
     touched={$state$.touched}
-    value={$state$.value}
+    {value}
     {onChange}
     {onBlur} />
 </div>

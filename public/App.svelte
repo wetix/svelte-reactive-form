@@ -10,7 +10,7 @@
     return /[0-9]+/.test(val) || "invalid phone number format";
   });
 
-  const form$ = useForm({});
+  const form$ = useForm({}, { validateOnChange: true });
   const { field, register, setValue, control, onSubmit } = form$;
 
   const state$ = register("custom_field", ["required", "minLength:10"]);
@@ -55,6 +55,11 @@
   .errors {
     color: red;
   }
+
+  button[type="submit"] {
+    margin: 10px 0;
+    width: 100%;
+  }
 </style>
 
 <form on:submit={onSubmit(handleSubmit)}>
@@ -88,7 +93,7 @@
   <div>
     <Field
       {control}
-      name="name2"
+      name="user.lastName"
       rules={{ required: true }}
       let:errors
       let:value
@@ -115,7 +120,7 @@
       {/each}
     </div>
   </div>
-  <div
+  <!-- <div
     use:field={{ defaultValue: '', rules: ruleOption === 1 ? ['required'] : [], onChange }}>
     <input name="description" type="text" />
     <div>
@@ -128,6 +133,12 @@
       {type}
       {name}
       on:input={(e) => setValue(name, e.currentTarget.value)} />
-  {/each}
-  <div><button type="submit" disabled={!$form$.valid}>Submit</button></div>
+  {/each} -->
+  <div>Form pending : {$form$.pending}</div>
+  <div>Form valid : {$form$.valid}</div>
+  <div>
+    <button type="submit" disabled={!$form$.valid || $form$.submitting}>
+      {#if $form$.submitting}Submit...{:else}Submit{/if}
+    </button>
+  </div>
 </form>

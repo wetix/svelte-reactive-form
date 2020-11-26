@@ -39,13 +39,16 @@ export const useForm = (
     [Writable<FieldState>, ValidationRule[]]
   > = new Map();
 
-  // global state for form
-  const form$ = writable<FormState>({
+  const defaultFormState = {
     dirty: false,
+    submitting: false,
     touched: false,
     pending: false,
     valid: false,
-  });
+  };
+
+  // global state for form
+  const form$ = writable<FormState>(Object.assign({}, defaultFormState));
 
   // errors should be private variable
   const errors$ = writable<Record<string, any>>({});
@@ -146,11 +149,29 @@ export const useForm = (
     }
   };
 
-  const setValue = (path: string, value: any): void => {
+  const setValue = (path: string, value: any) => {
     if (cache.has(path)) {
       const [store$, validators] = cache.get(path);
       if (opts.validateOnChange && validators.length > 0) {
-        _validate(path, value);
+        form$.update((v) => Object.assign(v, { pending: true, valid: false }));
+        const promises: Promise<ValidationResult>[] = [];
+        store$.update((v: FieldState) =>
+          Object.assign(v, { dirty: true, pending: true, value })
+        );
+        for (let i = 0, len = validators.length; i < len; i++) {
+          const { validate, params } = validators[i];
+          promises.push(validate(value, params));
+        }
+        Promise.all(promises).then((result: ValidationResult[]) => {
+          const errors = result.filter(
+            (v: ValidationResult) => v !== true
+          ) as string[];
+          const valid = errors.length === 0;
+          store$.update((v: FieldState) =>
+            Object.assign(v, { pending: false, errors, valid })
+          );
+          setError(path, errors);
+        });
       } else {
         store$.update((v) => Object.assign(v, { dirty: true, value }));
       }
@@ -169,7 +190,17 @@ export const useForm = (
   };
 
   const setError = (path: string, values: string[]) => {
-    errors$.update((v) => Object.assign(v, { [path]: values }));
+    errors$.update((v) => {
+      if (values.length === 0) {
+        if (v[path]) delete v[path];
+        if (Object.keys(v).length === 0)
+          form$.update((v) => Object.assign(v, { valid: true }));
+        return v;
+      }
+
+      form$.update((v) => Object.assign(v, { valid: false }));
+      return Object.assign(v, { [path]: values });
+    });
   };
 
   const setTouched = (path: string, touched: boolean): void => {
@@ -207,9 +238,7 @@ export const useForm = (
     let onBlur = (e: Event) => {};
 
     if (cache.has(node.name)) {
-      const [store$, _] = cache.get(node.name);
       onChange = (e: Event) => {
-        // store$.update((v) => Object.assign(v, { dirty: true }));
         setValue(name, (e.currentTarget as HTMLInputElement).value);
       };
 
@@ -239,9 +268,10 @@ export const useForm = (
     return {
       update(v: FieldOption) {
         // if option updated, re-register the validation rules
-        register(node.name, v.rules);
+        register(name, v.rules);
       },
       destroy() {
+        unregister(name);
         node.removeEventListener("change", onChange);
         node.removeEventListener("input", onChange);
         node.removeEventListener("blur", onBlur);
@@ -251,6 +281,7 @@ export const useForm = (
   };
 
   const onSubmit = (cb: OnSubmitCallback) => async (e: Event) => {
+    form$.update((v) => Object.assign(v, { submitting: true }));
     e.preventDefault();
     e.stopPropagation();
     let data = {};
@@ -263,6 +294,7 @@ export const useForm = (
         await _validate(name, value);
       }
     }
+    form$.update((v) => Object.assign(v, { submitting: false }));
     return cb(data, get(errors$), e);
   };
 
@@ -327,12 +359,7 @@ export const useForm = (
     if (!options.errors) {
       errors$.update((v) => Object.assign(v, {})); // reset errors
     }
-    form$.set({
-      dirty: false,
-      touched: false,
-      pending: false,
-      valid: false,
-    });
+    form$.set(Object.assign({}, defaultFormState));
     const fields = Array.from(cache.keys());
     for (let i = 0; i < fields.length; i += 1) {
       const [store$, _] = cache.get(fields[i]);
