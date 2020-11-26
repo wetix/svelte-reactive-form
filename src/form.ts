@@ -2,7 +2,7 @@ import { writable, get, readable } from "svelte/store";
 import type { Writable } from "svelte/store";
 
 import { resolveRule } from "./rule";
-import { isObject } from "./internal/assertions";
+import { isObject } from "./assertions";
 import toPromise from "./to_promise";
 import type {
   Config,

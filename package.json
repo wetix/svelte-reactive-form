@@ -1,6 +1,6 @@
 {
   "name": "svelte-reactive-form",
-  "version": "0.1.4-beta",
+  "version": "0.1.7-beta",
   "description": "",
   "author": "si3nloong <sianloong90@gmail.com>",
   "homepage": "",
@@ -9,7 +9,7 @@
   "browser": "index.cjs.js",
   "module": "index.esm.js",
   "svelte": "index.esm.js",
-  "types": "types/index.d.ts",
+  "types": "index.d.ts",
   "repository": "https://github.com/wetix/svelte-reactive-form",
   "keywords": [
     "SvelteJS",
@@ -18,16 +18,22 @@
     "validator",
     "form"
   ],
-  "files": [],
+  "files": [
+    "rules",
+    "types",
+    "index.cjs.js",
+    "index.esm.js",
+    "*.d.ts"
+  ],
   "scripts": {
     "dev": "rollup --config rollup.dev.config.js -w",
     "start": "sirv public --port 5500",
     "build": "rollup -c",
     "prepublishOnly": "npm run build",
     "validate": "svelte-check",
-    "tsd": "tsc ./src/*.ts --declaration --emitDeclarationOnly --outDir types",
+    "tsd": "tsc ./src/*.ts --declaration --emitDeclarationOnly --outDir ./",
     "test": "jest src",
-    "test:watch": "npm run test -- --watch"
+    "test:watch": "npm run test --watch"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.12.7",
