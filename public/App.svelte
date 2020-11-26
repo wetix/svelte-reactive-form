@@ -91,6 +91,22 @@
     </Field>
   </div>
   <div>
+    <Field
+      {control}
+      name="name2"
+      rules={{ required: true }}
+      let:errors
+      let:value
+      let:onChange>
+      <Component {onChange} {value} />
+      <div>Error :{JSON.stringify(errors)}</div>
+      <div>Value :{value}</div>
+      {#each errors as item}
+        <div>{item}</div>
+      {/each}
+    </Field>
+  </div>
+  <div>
     <input type="text" bind:value={customValue} />
     <button type="button" on:click={setCustomValue}>ok</button>
     <div>Dirty :{$state$.dirty}</div>

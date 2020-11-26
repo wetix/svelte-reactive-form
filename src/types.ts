@@ -43,15 +43,30 @@ export type FieldOption = {
   onChange: (v: FieldState, node: HTMLElement) => void;
 };
 
-export type Form = {
-  control: object;
-  field: (node: HTMLElement, opt: FieldOption) => void;
+export interface FormControl {
   register: (path: string, rules: RuleExpression) => Readable<FieldState>;
+  unregister: (path: string) => void;
   setValue: (path: string, value: any) => void;
-  setTouched: (path: string, state: boolean) => void;
+  getValue: (path: string) => any;
   setError: (path: string, values: string[]) => void;
+  setTouched: (path: string, state: boolean) => void;
   reset: (values: Fields) => void;
-};
+}
+
+declare interface FieldErrors extends Readable<Fields> {}
+
+export interface Form extends Readable<FormState>, FormControl {
+  control: Readable<FormControl>;
+  field: (
+    node: HTMLElement,
+    opt: FieldOption
+  ) => { update(v: FieldOption): void; destroy(): void };
+  errors: FieldErrors;
+  validate: any;
+  onSubmit: (
+    cb: OnSubmitCallback
+  ) => (e: Event) => Promise<[Fields, Fields, Event]>;
+}
 
 export type FormState = {
   pending: boolean;
