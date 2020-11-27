@@ -18,7 +18,16 @@ import type {
   FormControl,
   Form,
   Fields,
+  NodeElement,
 } from "./types";
+
+const defaultFormState = {
+  dirty: false,
+  submitting: false,
+  touched: false,
+  pending: false,
+  valid: false,
+};
 
 const defaultFieldState = {
   value: "",
@@ -29,6 +38,8 @@ const defaultFieldState = {
   errors: [],
 };
 
+const fields = ["INPUT", "SELECT", "TEXTAREA"];
+
 export const useForm = (
   config: Config = {},
   opts: FormOption = { validateOnChange: false }
@@ -38,14 +49,6 @@ export const useForm = (
     string,
     [Writable<FieldState>, ValidationRule[]]
   > = new Map();
-
-  const defaultFormState = {
-    dirty: false,
-    submitting: false,
-    touched: false,
-    pending: false,
-    valid: false,
-  };
 
   // global state for form
   const form$ = writable<FormState>(Object.assign({}, defaultFormState));
@@ -78,13 +81,9 @@ export const useForm = (
   };
 
   const register = (path: string, rules: RuleExpression) => {
-    // FIXME: Accept more indexes instead of hardcoded
-    const newPath = path.split(/\[\d+\]$/)[0];
-    const idx = parseFloat(path.split(/\[(.*?)\]/)[1]);
-    const value = isNaN(idx) ? flatCfg[newPath] : flatCfg[newPath][idx];
     const store$ = writable<FieldState>(
       Object.assign(defaultFieldState, {
-        value: value || "",
+        value: "",
       })
     );
 
@@ -135,7 +134,17 @@ export const useForm = (
     cache.set(path, [store$, ruleExprs]);
 
     return {
-      subscribe: store$.subscribe,
+      subscribe(
+        run: (value: FieldState) => void,
+        invalidate?: (value?: FieldState) => void
+      ) {
+        const unsubscribe = store$.subscribe(run, invalidate);
+        return () => {
+          // prevent memory leak
+          unsubscribe();
+          cache.delete(path); // clean our cache
+        };
+      },
     };
   };
 
@@ -160,9 +169,9 @@ export const useForm = (
           promises.push(validate(value, params));
         }
         Promise.all(promises).then((result: ValidationResult[]) => {
-          const errors = result.filter(
-            (v: ValidationResult) => v !== true
-          ) as string[];
+          const errors = <string[]>(
+            result.filter((v: ValidationResult) => v !== true)
+          );
           const valid = errors.length === 0;
           store$.update((v: FieldState) =>
             Object.assign(v, { pending: false, errors, valid })
@@ -216,43 +225,42 @@ export const useForm = (
     return null;
   };
 
-  const useField = (node: HTMLInputElement, option: FieldOption) => {
+  const useField = (node: NodeElement, option?: FieldOption) => {
     option = Object.assign({ rules: [], defaultValue: "" }, option);
     // const parentNode = node;
-    while (!["input", "select", "textarea"].includes(node.type)) {
+    const selector = fields.join(",");
+    while (!fields.includes(node.nodeName)) {
       // TODO: change to select, textarea etc
-      const nodes = node.getElementsByTagName("input");
-      if (nodes.length == 0) break;
-      node = nodes[0];
+      const el = <NodeElement>node.querySelector(selector);
+      node = el;
+      if (el) break;
     }
-    const { name } = node;
+    const { name, nodeName } = node;
     if (name === "") console.error("[svelte-reactive-form] empty field name");
     const state$ = register(node.name, option.rules);
 
-    let onChange = (e: Event) => {
-      setValue(name, (e.currentTarget as HTMLInputElement).value);
+    const onChange = (e: Event) => {
+      setValue(name, (<HTMLInputElement>e.currentTarget).value);
     };
-    let onBlur = (e: Event) => {};
+    const onBlur = (e: Event) => {
+      setTouched(node.name, true);
+    };
 
-    if (cache.has(node.name)) {
-      onChange = (e: Event) => {
-        setValue(name, (e.currentTarget as HTMLInputElement).value);
-      };
+    const listeners: Array<[string, any]> = [];
+    const _attachEvent = (
+      event: string,
+      cb: (e: Event) => void,
+      opts?: any
+    ) => {
+      node.addEventListener(event, cb, opts);
+      listeners.push([event, cb]);
+    };
 
-      onBlur = (e: Event) => {
-        // setTouched(node.name, true);
-      };
-
-      node.addEventListener("blur", onBlur, { once: true });
-
-      if (
-        opts.validateOnChange &&
-        (node.nodeName === "INPUT" || node.nodeName === "TEXTAREA")
-      ) {
-        node.addEventListener("input", onChange);
-      } else if (opts.validateOnChange && node.nodeName === "SELECT") {
-        node.addEventListener("change", onChange);
-      }
+    _attachEvent("blur", onBlur, { once: true });
+    if (opts.validateOnChange) {
+      if (["INPUT", "TEXTAREA"].includes(nodeName))
+        _attachEvent("input", onChange);
+      else if (nodeName === "SELECT") _attachEvent("change", onChange);
     }
 
     let unsubscribe;
@@ -269,9 +277,10 @@ export const useForm = (
       },
       destroy() {
         unregister(name);
-        node.removeEventListener("change", onChange);
-        node.removeEventListener("input", onChange);
-        node.removeEventListener("blur", onBlur);
+        for (let i = 0, len = listeners.length; i < len; i++) {
+          const [event, cb] = listeners[i];
+          node.removeEventListener(event, cb);
+        }
         unsubscribe && unsubscribe();
       },
     };
@@ -282,7 +291,7 @@ export const useForm = (
     e.preventDefault();
     e.stopPropagation();
     let data = {};
-    const { elements = [] } = e.currentTarget as HTMLFormElement;
+    const { elements = [] } = <HTMLFormElement>e.currentTarget;
     for (let i = 0, len = elements.length; i < len; i++) {
       const { name, value } = elements[i];
       if (!name) continue;
@@ -386,7 +395,17 @@ export const useForm = (
       },
       () => {}
     ),
-    subscribe: form$.subscribe,
+    subscribe(
+      run: (value: FormState) => void,
+      invalidate?: (value?: FormState) => void
+    ) {
+      const unsubscribe = form$.subscribe(run, invalidate);
+      return () => {
+        // prevent memory leak
+        unsubscribe();
+        cache.clear(); // clean our cache
+      };
+    },
     errors: {
       subscribe: errors$.subscribe,
     },
