@@ -97,8 +97,9 @@
       rules={{ required: true }}
       let:errors
       let:value
-      let:onChange>
-      <Component {onChange} {value} />
+      let:onChange
+      let:onBlur>
+      <Component {onChange} {value} {onBlur} />
       <div>Error :{JSON.stringify(errors)}</div>
       <div>Value :{value}</div>
       {#each errors as item}
