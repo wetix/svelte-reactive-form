@@ -2,6 +2,7 @@
   import { useForm, Field, defineRule } from "../src/index";
   import { required, minLength } from "../src/rules";
   import Component from "./Component.svelte";
+  import Form from "./Form.svelte";
   import * as yup from "yup";
 
   defineRule("required", required);
@@ -15,6 +16,7 @@
 
   const state$ = register("custom_field", ["required", "minLength:10"]);
 
+  let toggle = true;
   const handleSubmit = (v) => {
     console.log("submit =>", v);
   };
@@ -121,6 +123,17 @@
       {/each}
     </div>
   </div>
+  <button type="button" on:click={() => (toggle = !toggle)}>toggle form</button>
+  {#if toggle}
+    <Form>
+      <div>FORM 1</div>
+    </Form>
+  {:else}
+    <Form>
+      <div>FORM 2</div>
+    </Form>
+  {/if}
+
   <!-- <div
     use:field={{ defaultValue: '', rules: ruleOption === 1 ? ['required'] : [], onChange }}>
     <input name="description" type="text" />

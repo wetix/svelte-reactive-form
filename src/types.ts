@@ -23,6 +23,11 @@ export type OnSubmitCallback = (
   e: Event
 ) => any;
 
+export type NodeElement =
+  | HTMLInputElement
+  | HTMLSelectElement
+  | HTMLTextAreaElement;
+
 export type ValidationResult = boolean | string;
 
 export type ValidationFunction = (
@@ -38,9 +43,9 @@ export type RuleExpression =
   | Record<string, any>;
 
 export type FieldOption = {
-  rules: RuleExpression;
+  rules?: RuleExpression;
   defaultValue?: any;
-  onChange: (v: FieldState, node: HTMLElement) => void;
+  onChange?: (state: FieldState, node: HTMLElement) => void;
 };
 
 export interface FormControl {
@@ -55,12 +60,14 @@ export interface FormControl {
 
 declare interface FieldErrors extends Readable<Fields> {}
 
+type UseField = (
+  node: HTMLElement,
+  opt?: FieldOption
+) => { update(v: FieldOption): void; destroy(): void };
+
 export interface Form extends Readable<FormState>, FormControl {
   control: Readable<FormControl>;
-  field: (
-    node: HTMLElement,
-    opt: FieldOption
-  ) => { update(v: FieldOption): void; destroy(): void };
+  field: UseField;
   errors: FieldErrors;
   validate: any;
   onSubmit: (
