@@ -6,3 +6,5 @@
 - allow to set default value
 - fix memory leak on form
 - fix memory leak on field
+- allow setValue reflect value in Field
+- fix \$state\$.value is empty in script but not HTML
