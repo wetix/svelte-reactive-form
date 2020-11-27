@@ -1,8 +1,10 @@
-    // elements = ["name", "description"]
-    // 1. validate "name"
-    // name = name
-    // value = John
-    // 2. retrieve "name" store
-    // 3. update "name" store (pending = true)
-    // 4. name's validators = ["required", "min:3", "unique"]
-    // 5. Promise.all(["required", "min:3", "unique"])
+- update docs (Advanced usage, api etc)
+- update README
+- fix ci, allow ci only deploy if version was updated
+- allow array
+- use:field with querySelectorAll("input, select or textarea")
+- allow to set default value
+- fix memory leak on form
+- fix memory leak on field
+- allow setValue reflect value in Field
+- fix \$state\$.value is empty in script but not HTML

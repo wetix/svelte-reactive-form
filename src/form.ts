@@ -135,9 +135,6 @@ export const useForm = (
     cache.set(path, [store$, ruleExprs]);
 
     return {
-      setValue: (value) => {
-        setValue(path, value);
-      },
       subscribe: store$.subscribe,
     };
   };
