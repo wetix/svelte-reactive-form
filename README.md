@@ -28,16 +28,22 @@ How to use
   import { useForm, Field, defineRule } from "svelte-reactive-form";
   import { required, minLength } from "svelte-reactive-form/rules";
 
+  // define the global validation rules
   defineRule("required", required);
   defineRule("minLength", minLength);
   defineRule("numeric", (val: any) => {
     return /[0-9]+/.test(val) || "invalid numeric format";
   });
 
+  // initialize the form instance
   const form$ = useForm();
   const { field, register, setValue, control, onSubmit } = form$;
 
-  register("pin", { rules: ["required", "minLength:4", "numeric"] });
+  // you can register your field manually
+  register("pin", { 
+    defaultValue: "", 
+    rules: ["required", "minLength:4", "numeric"]
+  });
 
   const handleSubmit = (v) => {
     console.log(v)
