@@ -16,7 +16,10 @@
   const { register, unregister, setValue, setTouched } = form;
 
   // reactive state
-  const state$ = register(name, rules);
+  const state$ = register(name, {
+    defaultValue,
+    rules,
+  });
 
   let value = defaultValue;
   const onChange = (e: any) => {

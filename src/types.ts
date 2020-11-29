@@ -42,6 +42,11 @@ export type RuleExpression =
   | Record<string, Validator>
   | Record<string, any>;
 
+export type RegisterOption = {
+  defaultValue?: any;
+  rules?: RuleExpression;
+};
+
 export type FieldOption = {
   rules?: RuleExpression;
   defaultValue?: any;
@@ -49,7 +54,7 @@ export type FieldOption = {
 };
 
 export interface FormControl {
-  register: (path: string, rules: RuleExpression) => Readable<FieldState>;
+  register: (path: string, option?: RegisterOption) => Readable<FieldState>;
   unregister: (path: string) => void;
   setValue: (path: string, value: any) => void;
   getValue: (path: string) => any;
@@ -62,7 +67,7 @@ declare interface FieldErrors extends Readable<Fields> {}
 
 type UseField = (
   node: HTMLElement,
-  opt?: FieldOption
+  option?: FieldOption
 ) => { update(v: FieldOption): void; destroy(): void };
 
 export interface Form extends Readable<FormState>, FormControl {

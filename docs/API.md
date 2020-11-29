@@ -1,14 +1,14 @@
 # useForm
 - [useForm](#useform)
-    - [form object](#form-object)
-    - [control](#control)
-    - [register](#register)
-    - [setValue](#setvalue)
-    - [setTouched](#settouched)
-    - [setError](#seterror)
-    - [errors](#errors)
+  - [form object](#form-object)
+  - [control](#control)
+  - [register](#register)
+  - [setValue](#setvalue)
+  - [setTouched](#settouched)
+  - [setError](#seterror)
+  - [errors](#errors)
 
-### form object
+## form object
 > Form object is a reactive object, is contains 
 
 | Property     | Description            | Data Type | Default Value |
@@ -36,12 +36,22 @@
 ```
 <br />
 
-### control
+## control
 > The form context.
+
+| Property     | Description            | Data Type          |
+| ------------ | ---------------------- | ------------------ |
+| `register`   | check all fields valid | `() => FieldState` |
+| `unregister` | form is validating     | `boolean`          |
+| `submitting` | form is submitting     | `boolean`          |
+| `dirty`      | -                      | `boolean`          |
+| `touched`    | -                      | `boolean`          |
 
 <br />
 
-### register
+## register
+> Register field with defaultValue, rules etc
+
 ```svelte
 <script>
     import { useForm } from "svelte-reactive-form";
@@ -58,20 +68,28 @@
     }
 
     // register validation rules using array for fieldA
-    register("fieldA", [required, asyncFunc]);
+    register("fieldA", {
+        defaultValue: "hello world!",
+        rules: [required, asyncFunc],
+    });
 
     // register validation rules using string for fieldB
-    register("fieldB", "required|minLength:2");
+    register("fieldB", {
+        rules: "required|minLength:2"
+    });
 
     // register validation rules using object for fieldB
-    register("fieldC", { required, asyncFunc });
+    register("fieldC", {
+        rules: { required, asyncFunc },
+    });
 </script>
 ```
 
 <br />
 
-### setValue
+## setValue
 > setValue will execute validation if `validateOnChange` is `true`.
+
 ```svelte
 <script>
     import { useForm } from "svelte-reactive-form";
@@ -84,11 +102,23 @@
 
 <br />
 
-### setTouched
+## setTouched
+> Set field touched
+```svelte
+<script>
+    import { useForm } from "svelte-reactive-form";
+
+    const { setTouched } = useForm();
+    register("name")
+</script>
+
+<input type="text" on:focus={() => setTouched("name", true)}>
+```
 
 <br />
 
-### setError
+## setError
+> Set field error
 ```svelte
 <script>
     import { useForm } from "svelte-reactive-form";
@@ -105,4 +135,4 @@
 
 <br />
 
-### errors
+## errors

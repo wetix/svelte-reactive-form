@@ -12,9 +12,13 @@
   });
 
   const form$ = useForm({}, { validateOnChange: true });
-  const { field, register, setValue, control, onSubmit } = form$;
+  const { register, setValue, control, onSubmit } = form$;
 
-  const state$ = register("custom_field", ["required", "minLength:10"]);
+  register("empty_option_field");
+  const state$ = register("custom_field", {
+    defaultValue: "Custom",
+    rules: ["required", "minLength:10"],
+  });
 
   let toggle = true;
   const handleSubmit = (v) => {
@@ -110,13 +114,16 @@
     </Field>
   </div>
   <div>
-    <input type="text" bind:value={customValue} />
+    Custom Field :<input type="text" bind:value={customValue} />
     <button type="button" on:click={setCustomValue}>ok</button>
     <div>Dirty :{$state$.dirty}</div>
     <div>Valid :{$state$.valid}</div>
     <div>Pending :{$state$.pending}</div>
     <div>Touched :{$state$.touched}</div>
-    <div>Value :{`${$state$.value} (${$state$.value.length})`}</div>
+    <div>
+      Value :{$state$.value}<span
+        style="color:green;">({$state$.value.length})</span>
+    </div>
     <div class="errors">
       {#each $state$.errors as item}
         <div>{item}</div>

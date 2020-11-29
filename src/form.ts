@@ -19,6 +19,7 @@ import type {
   Form,
   Fields,
   NodeElement,
+  RegisterOption,
 } from "./types";
 
 const defaultFormState = {
@@ -80,14 +81,15 @@ export const useForm = (
     };
   };
 
-  const register = (path: string, rules: RuleExpression) => {
+  const register = (path: string, option: RegisterOption = {}) => {
     const store$ = writable<FieldState>(
       Object.assign(defaultFieldState, {
-        value: "",
+        value: option.defaultValue || "",
       })
     );
 
     let ruleExprs: ValidationRule[] = [];
+    const { rules = [] } = option;
     const typeOfRule = typeof rules;
     if (typeOfRule === "string") {
       ruleExprs = (rules as string)
@@ -225,7 +227,7 @@ export const useForm = (
     return null;
   };
 
-  const useField = (node: NodeElement, option?: FieldOption) => {
+  const useField = (node: NodeElement, option: FieldOption = {}) => {
     option = Object.assign({ rules: [], defaultValue: "" }, option);
     // const parentNode = node;
     const selector = fields.join(",");
@@ -237,13 +239,14 @@ export const useForm = (
     }
     const { name, nodeName } = node;
     if (name === "") console.error("[svelte-reactive-form] empty field name");
-    const state$ = register(node.name, option.rules);
 
+    const { defaultValue, rules } = option;
+    const state$ = register(name, { defaultValue, rules });
     const onChange = (e: Event) => {
       setValue(name, (<HTMLInputElement>e.currentTarget).value);
     };
-    const onBlur = (e: Event) => {
-      setTouched(node.name, true);
+    const onBlur = (_: Event) => {
+      setTouched(name, true);
     };
 
     const listeners: Array<[string, any]> = [];
@@ -271,9 +274,12 @@ export const useForm = (
     }
 
     return {
-      update(v: FieldOption) {
+      update(newOption: FieldOption = {}) {
         // if option updated, re-register the validation rules
-        register(name, v.rules);
+        register(name, {
+          defaultValue: newOption.defaultValue || "",
+          rules: newOption.rules,
+        });
       },
       destroy() {
         unregister(name);
@@ -320,9 +326,9 @@ export const useForm = (
     }
     return Promise.all(promises)
       .then((result: ValidationResult[]) => {
-        const errors = result.filter(
-          (v: ValidationResult) => v !== true
-        ) as string[];
+        const errors = <string[]>(
+          result.filter((v: ValidationResult) => v !== true)
+        );
         const valid = errors.length === 0;
         store$.update((v: FieldState) =>
           Object.assign(v, { pending: false, valid, errors })
