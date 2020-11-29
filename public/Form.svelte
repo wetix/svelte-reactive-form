@@ -12,6 +12,7 @@
 
   let option = "";
   const onChange = (state: FieldState) => {
+    console.log(getValue("options"));
     option = state.value;
   };
 </script>
@@ -26,7 +27,7 @@
     <div>{desc}</div>
     <button type="button" on:click={showDesc}>get value</button>
   </div>
-  <section use:field={{ onChange }}>
+  <section use:field={{ defaultValue: 'a', onChange }}>
     <div>
       <select name="options">
         <option value="a">A</option>
