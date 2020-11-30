@@ -42,6 +42,56 @@ const defaultFieldState = {
 
 const fields = ["INPUT", "SELECT", "TEXTAREA"];
 
+// TODO: test case for _normalizeObject
+const _normalizeObject = (data: object, name: string, value: any) => {
+  const queue: [[object, Array<string>]] = [[data, name.split(".")]];
+  while (queue.length > 0) {
+    const first = queue.shift();
+    const paths = first[1];
+    const name = paths.shift();
+    const result = name.match(/^([a-z\_\.]+)((\[\d+\])+)/i);
+
+    if (result && result.length > 2) {
+      const name = result[1];
+      // if it's not array, assign it and make it as array
+      if (!Array.isArray(first[0][name])) {
+        first[0][name] = [];
+      }
+      let cur = first[0][name];
+      const indexs = result[2].replace(/^\[+|\]+$/g, "").split("][");
+      while (indexs.length > 0) {
+        const index = parseInt(indexs.shift(), 10);
+        // if nested index is last position && parent is last position
+        if (indexs.length === 0 && paths.length === 0) {
+          cur[index] = value;
+        } else {
+          cur[index] = [];
+        }
+        cur = cur[index];
+      }
+
+      if (paths.length > 0) {
+        queue.push([cur, paths]);
+      }
+
+      continue;
+    }
+
+    if (paths.length === 0) {
+      if (Array.isArray(first[0])) {
+        first[0].push(Object.assign({}, { [name]: value }));
+      } else {
+        first[0][name] = value;
+      }
+    } else {
+      first[0][name] = {};
+      queue.push([first[0][name], paths]);
+    }
+  }
+
+  return data;
+};
+
 export const useForm = (
   config: Config = {},
   opts: FormOption = { validateOnChange: false }
@@ -284,55 +334,6 @@ export const useForm = (
         unsubscribe && unsubscribe();
       },
     };
-  };
-
-  const _normalizeObject = (data: object, name: string, value: any) => {
-    const queue: [[object, Array<string>]] = [[data, name.split(".")]];
-    while (queue.length > 0) {
-      const first = queue.shift();
-      const paths = first[1];
-      const name = paths.shift();
-      const result = name.match(/^([a-z\_\.]+)((\[\d+\])+)/i);
-
-      if (result && result.length > 2) {
-        const name = result[1];
-        // if it's not array, assign it and make it as array
-        if (!Array.isArray(first[0][name])) {
-          first[0][name] = [];
-        }
-        let cur = first[0][name];
-        const indexs = result[2].replace(/^\[+|\]+$/g, "").split("][");
-        while (indexs.length > 0) {
-          const index = parseInt(indexs.shift(), 10);
-          // if nested index is last position && parent is last position
-          if (indexs.length === 0 && paths.length === 0) {
-            cur[index] = value;
-          } else {
-            cur[index] = [];
-          }
-          cur = cur[index];
-        }
-
-        if (paths.length > 0) {
-          queue.push([cur, paths]);
-        }
-
-        continue;
-      }
-
-      if (paths.length === 0) {
-        if (Array.isArray(first[0])) {
-          first[0].push(Object.assign({}, { [name]: value }));
-        } else {
-          first[0][name] = value;
-        }
-      } else {
-        first[0][name] = {};
-        queue.push([first[0][name], paths]);
-      }
-    }
-
-    return data;
   };
 
   const onSubmit = (

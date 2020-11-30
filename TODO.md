@@ -12,3 +12,4 @@ TODO
 - ✅ fix \$state\$.value is empty in script but not HTML
 - 🚸 allow to use yup or any relevence lib
 - 🚸 update docs (Advanced usage, api etc)
+- 🚸 test cases
