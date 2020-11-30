@@ -42,13 +42,23 @@
         console.log(err);
       });
   };
+
+  const afterSubmit = (data, e): Promise<void> => {
+    console.log("debug =>", data);
+    console.log("Event =>", e);
+    return new Promise((resolve: Function) => {
+      setTimeout(() => {
+        resolve();
+      }, 2000);
+    });
+  };
 </script>
 
 <style>
   /* your styles go here */
 </style>
 
-<form on:submit|preventDefault={validateForm}>
+<form on:submit|preventDefault={form$.onSubmit(afterSubmit)}>
   <div><button type="button" on:click={handleAdd}>ADD</button></div>
   {#each items as item, i (item.id)}
     <div>
@@ -63,5 +73,9 @@
     <div>Last name: <input type="text" name={`users[${i}].lastName`} /></div>
     <div>Nickname: <input type="text" name={`users[${i}].nickName`} /></div>
   {/each}
-  <div><button type="submit" disabled={items.length === 0}>SUBMIT</button></div>
+  <div>
+    <button type="submit" disabled={$form$.submitting || items.length === 0}>
+      {#if $form$.submitting}SUBMITTING...{:else}SUBMIT{/if}
+    </button>
+  </div>
 </form>

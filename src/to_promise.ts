@@ -1,4 +1,4 @@
-const toPromise = <T>(fn: Function): (() => Promise<T>) => {
+const toPromise = <T>(fn: Function) => {
   return function (...args: any[]) {
     const value = fn.apply(null, args);
     if (value && typeof value.then === "function") {

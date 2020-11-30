@@ -2,7 +2,6 @@ import { writable, get, readable } from "svelte/store";
 import type { Writable } from "svelte/store";
 
 import { resolveRule } from "./rule";
-import { isObject } from "./assertions";
 import toPromise from "./to_promise";
 import type {
   Config,
@@ -353,24 +352,27 @@ export const useForm = (
     const { elements = [] } = <HTMLFormElement>e.currentTarget;
     for (let i = 0, len = elements.length; i < len; i++) {
       const name = elements[i].name || elements[i].id;
+      let value = elements[i].value || "";
       if (!name) continue;
       // TODO: shouldn't only loop elements, should check cache keys which not exists in elements as well
       if (cache.has(name)) {
         // TODO: check checkbox and radio
-        let { nodeName, type, value } = elements[i];
+        const { nodeName, type } = elements[i];
         switch (type) {
           case "checkbox":
             value = elements[i].checked ? value : "";
             break;
         }
-        data = _normalizeObject(data, name, value);
+
         const result = await _validate(name, value);
         valid = valid && result.valid; // update valid
       }
+
+      data = _normalizeObject(data, name, value);
     }
 
     if (valid) {
-      await toPromise<void>(successCallback(data, e));
+      await toPromise<void>(successCallback)(data, e);
     } else {
       errorCallback && errorCallback(get(errors$), e);
     }
