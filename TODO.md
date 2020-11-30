@@ -9,5 +9,5 @@ TODO
 - ✅ allow setValue reflect value in Field
 - 🚸 update docs (Advanced usage, api etc)
 - 🚸 allow array on name
-- ⚠️ [BREAKING CHANGE] allow default value on register
+- ✅ [BREAKING CHANGE] allow default value on register
 - ❓ fix \$state\$.value is empty in script but not HTML

@@ -42,15 +42,22 @@
 | Property     | Description            | Data Type          |
 | ------------ | ---------------------- | ------------------ |
 | `register`   | check all fields valid | `() => FieldState` |
-| `unregister` | form is validating     | `boolean`          |
-| `submitting` | form is submitting     | `boolean`          |
-| `dirty`      | -                      | `boolean`          |
-| `touched`    | -                      | `boolean`          |
+| `unregister` | form is validating     | `() => void`       |
 
 <br />
 
 ## register
-> Register field with defaultValue, rules etc
+> Register field with defaultValue, rules etc. It will return a reactive state.
+
+| Property       | Description                               | Data Type  |
+| -------------- | ----------------------------------------- | ---------- |
+| `defaultValue` | default value of the field                | `any`      |
+| `value`        | value of the field                        | `any`      |
+| `pending`      | determine the current field is validating | `boolean`  |
+| `valid`        | determine the current field was valid     | `boolean`  |
+| `touched`      | determine the current field was touched   | `boolean`  |
+| `dirty`        | determine the current field was dirty     | `boolean`  |
+| `errors`       | errors of the field                       | `string[]` |
 
 ```svelte
 <script>
@@ -68,7 +75,7 @@
     }
 
     // register validation rules using array for fieldA
-    register("fieldA", {
+    const state = register("fieldA", {
         defaultValue: "hello world!",
         rules: [required, asyncFunc],
     });

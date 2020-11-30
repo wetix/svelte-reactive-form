@@ -17,11 +17,13 @@ export type FormOption = {
   validateOnChange: boolean;
 };
 
-export type OnSubmitCallback = (
+export type SuccessCallback = (
   data: Record<string, any>,
-  errors: { [key: string]: string | boolean },
+  // errors: { [key: string]: string | boolean },
   e: Event
 ) => any;
+
+export type ErrorCallback = (errors: Record<string, any>, e: Event) => any;
 
 export type NodeElement =
   | HTMLInputElement
@@ -60,7 +62,7 @@ export interface FormControl {
   getValue: (path: string) => any;
   setError: (path: string, values: string[]) => void;
   setTouched: (path: string, state: boolean) => void;
-  reset: (values: Fields) => void;
+  reset: (values?: Fields) => void;
 }
 
 declare interface FieldErrors extends Readable<Fields> {}
@@ -76,8 +78,9 @@ export interface Form extends Readable<FormState>, FormControl {
   errors: FieldErrors;
   validate: any;
   onSubmit: (
-    cb: OnSubmitCallback
-  ) => (e: Event) => Promise<[Fields, Fields, Event]>;
+    success: SuccessCallback,
+    error?: ErrorCallback
+  ) => (e: Event) => void;
 }
 
 export type FormState = {
@@ -89,6 +92,7 @@ export type FormState = {
 };
 
 export type FieldState = {
+  defaultValue: any;
   value: any;
   pending: boolean;
   dirty: boolean;

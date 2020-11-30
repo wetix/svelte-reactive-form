@@ -14,6 +14,7 @@
   const form$ = useForm({}, { validateOnChange: true });
   const { register, setValue, control, onSubmit } = form$;
 
+  let editable = false;
   register("empty_option_field");
   const state$ = register("custom_field", {
     defaultValue: "Custom",
@@ -55,9 +56,22 @@
   ];
 
   const onChange = (v, node) => {};
+
+  const formB$ = useForm({}, { validateOnChange: true });
+  const customField$ = formB$.register("custom_field", {
+    defaultValue: "Custom",
+    rules: ["required", "minLength:10"],
+  });
 </script>
 
 <style>
+  .row {
+    display: flex;
+  }
+
+  .column {
+    width: 50%;
+  }
   .errors {
     color: red;
   }
@@ -68,98 +82,134 @@
   }
 </style>
 
-<form on:submit={onSubmit(handleSubmit)}>
-  <div>
-    <Field
-      {control}
-      name="name"
-      defaultValue="Testing"
-      rules={[required, asyncValidation, 'minLength:6']}
-      let:dirty
-      let:touched
-      let:pending
-      let:value
-      let:valid
-      let:errors
-      let:onChange
-      let:onBlur>
-      <Component {onChange} {value} {onBlur} />
-      <div class="errors">
-        {#each errors as item}
-          <div>{item}</div>
-        {/each}
+<section class="row">
+  <div class="column">
+    <form on:submit={onSubmit(handleSubmit)}>
+      <div>
+        <Field
+          {control}
+          name="name"
+          defaultValue="Testing"
+          rules={[required, asyncValidation, 'minLength:6']}
+          let:dirty
+          let:touched
+          let:pending
+          let:value
+          let:valid
+          let:errors
+          let:onChange
+          let:onBlur>
+          <Component {onChange} {value} {onBlur} />
+          <div class="errors">
+            {#each errors as item}
+              <div>{item}</div>
+            {/each}
+          </div>
+          <div>Dirty :{dirty}</div>
+          <div>Valid :{valid}</div>
+          <div>Pending :{pending}</div>
+          <div>Touched :{touched}</div>
+          <div>Value :{value}</div>
+        </Field>
       </div>
-      <div>Dirty :{dirty}</div>
-      <div>Valid :{valid}</div>
-      <div>Pending :{pending}</div>
-      <div>Touched :{touched}</div>
-      <div>Value :{value}</div>
-    </Field>
-  </div>
-  <div>
-    <Field
-      {control}
-      name="user.lastName"
-      rules={{ required: true }}
-      let:errors
-      let:value
-      let:onChange
-      let:onBlur>
-      <Component {onChange} {value} {onBlur} />
-      <div>Error :{JSON.stringify(errors)}</div>
-      <div>Value :{value}</div>
-      {#each errors as item}
-        <div>{item}</div>
-      {/each}
-    </Field>
-  </div>
-  <div>
-    Custom Field :<input type="text" bind:value={customValue} />
-    <button type="button" on:click={setCustomValue}>ok</button>
-    <div>Dirty :{$state$.dirty}</div>
-    <div>Valid :{$state$.valid}</div>
-    <div>Pending :{$state$.pending}</div>
-    <div>Touched :{$state$.touched}</div>
-    <div>
-      Value :{$state$.value}<span
-        style="color:green;">({$state$.value.length})</span>
-    </div>
-    <div class="errors">
-      {#each $state$.errors as item}
-        <div>{item}</div>
-      {/each}
-    </div>
-  </div>
-  <button type="button" on:click={() => (toggle = !toggle)}>toggle form</button>
-  {#if toggle}
-    <Form>
-      <div>FORM 1</div>
-    </Form>
-  {:else}
-    <Form>
-      <div>FORM 2</div>
-    </Form>
-  {/if}
+      <div>
+        <Field
+          {control}
+          name="user.lastName"
+          rules={{ required: true }}
+          let:errors
+          let:value
+          let:onChange
+          let:onBlur>
+          <Component {onChange} {value} {onBlur} />
+          <div>Error :{JSON.stringify(errors)}</div>
+          <div>Value :{value}</div>
+          {#each errors as item}
+            <div>{item}</div>
+          {/each}
+        </Field>
+      </div>
+      <div>
+        Custom Field :<input type="text" bind:value={customValue} />
+        <button type="button" on:click={setCustomValue}>ok</button>
+        <div>Dirty :{$state$.dirty}</div>
+        <div>Valid :{$state$.valid}</div>
+        <div>Pending :{$state$.pending}</div>
+        <div>Touched :{$state$.touched}</div>
+        <div>
+          Value :{$state$.value}<span
+            style="color:green;">({$state$.value.length})</span>
+        </div>
+        <div class="errors">
+          {#each $state$.errors as item}
+            <div>{item}</div>
+          {/each}
+        </div>
+      </div>
+      <button type="button" on:click={() => (toggle = !toggle)}>toggle form</button>
+      {#if toggle}
+        <Form>
+          <div>FORM 1</div>
+        </Form>
+      {:else}
+        <Form>
+          <div>FORM 2</div>
+        </Form>
+      {/if}
 
-  <!-- <div
-    use:field={{ defaultValue: '', rules: ruleOption === 1 ? ['required'] : [], onChange }}>
-    <input name="description" type="text" />
-    <div>
-      <button type="button" on:click={() => (ruleOption = 1)}>Rule 1</button>
-      <button type="button" on:click={() => (ruleOption = 2)}>Rule 2</button>
-    </div>
+      <!-- <div
+        use:field={{ defaultValue: '', rules: ruleOption === 1 ? ['required'] : [], onChange }}>
+        <input name="description" type="text" />
+        <div>
+          <button type="button" on:click={() => (ruleOption = 1)}>Rule 1</button>
+          <button type="button" on:click={() => (ruleOption = 2)}>Rule 2</button>
+        </div>
+      </div>
+      {#each items as { name, type }}
+        <input
+          {type}
+          {name}
+          on:input={(e) => setValue(name, e.currentTarget.value)} />
+      {/each} -->
+      <div>Form pending : {$form$.pending}</div>
+      <div>Form valid : {$form$.valid}</div>
+      <div>
+        <button type="submit" disabled={!$form$.valid || $form$.submitting}>
+          {#if $form$.submitting}Submit...{:else}Submit{/if}
+        </button>
+      </div>
+    </form>
   </div>
-  {#each items as { name, type }}
-    <input
-      {type}
-      {name}
-      on:input={(e) => setValue(name, e.currentTarget.value)} />
-  {/each} -->
-  <div>Form pending : {$form$.pending}</div>
-  <div>Form valid : {$form$.valid}</div>
-  <div>
-    <button type="submit" disabled={!$form$.valid || $form$.submitting}>
-      {#if $form$.submitting}Submit...{:else}Submit{/if}
-    </button>
+  <div class="column">
+    <form name="form-b" on:submit|preventDefault={formB$.onSubmit(console.log)}>
+      {#if editable}
+        <div
+          use:formB$.field={{ defaultValue: '', rules: ['required', asyncValidation] }}>
+          <input name="description" type="text" />
+        </div>
+        <input
+          type="text"
+          value={$customField$.value}
+          on:input={(e) => formB$.setValue('custom_field', e.target.value)} />
+        {JSON.stringify($customField$)}
+      {:else}
+        <input
+          id="checkbox"
+          type="checkbox"
+          value="ok"
+          use:formB$.field={{ rules: ['required'] }} />
+      {/if}
+      <div>
+        <button type="button" on:click={() => (editable = !editable)}>Toggle
+          Editable</button>
+      </div>
+      <div>Form pending : {$formB$.pending}</div>
+      <div>Form valid : {$formB$.valid}</div>
+      <div>Form submitting : {$formB$.submitting}</div>
+      <button type="reset" on:click={() => formB$.reset()}>Reset</button>
+      <button type="submit" disabled={$formB$.submitting}>
+        {#if $formB$.submitting}Submit...{:else}Submit{/if}
+      </button>
+    </form>
   </div>
-</form>
+</section>

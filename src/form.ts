@@ -8,10 +8,9 @@ import type {
   Config,
   FieldState,
   FieldOption,
-  RuleExpression,
   ValidationRule,
   FormOption,
-  OnSubmitCallback,
+  SuccessCallback,
   FormState,
   ValidationResult,
   ResetFormOption,
@@ -20,6 +19,7 @@ import type {
   Fields,
   NodeElement,
   RegisterOption,
+  ErrorCallback,
 } from "./types";
 
 const defaultFormState = {
@@ -31,6 +31,7 @@ const defaultFormState = {
 };
 
 const defaultFieldState = {
+  defaultValue: "",
   value: "",
   pending: false,
   dirty: false,
@@ -82,9 +83,11 @@ export const useForm = (
   };
 
   const register = (path: string, option: RegisterOption = {}) => {
+    const value = option.defaultValue || "";
     const store$ = writable<FieldState>(
-      Object.assign(defaultFieldState, {
-        value: option.defaultValue || "",
+      Object.assign({}, defaultFieldState, {
+        defaultValue: value,
+        value,
       })
     );
 
@@ -184,14 +187,9 @@ export const useForm = (
         store$.update((v) => Object.assign(v, { dirty: true, value }));
       }
     } else {
+      // FIXME: prevent memory leak
       cache.set(path, [
-        writable<FieldState>(
-          Object.assign(defaultFieldState, {
-            dirty: true,
-            valid: true,
-            value,
-          })
-        ),
+        writable<FieldState>(Object.assign({}, defaultFieldState)),
         [],
       ]);
     }
@@ -229,7 +227,6 @@ export const useForm = (
 
   const useField = (node: NodeElement, option: FieldOption = {}) => {
     option = Object.assign({ rules: [], defaultValue: "" }, option);
-    // const parentNode = node;
     const selector = fields.join(",");
     while (!fields.includes(node.nodeName)) {
       // TODO: change to select, textarea etc
@@ -237,7 +234,8 @@ export const useForm = (
       node = el;
       if (el) break;
     }
-    const { name, nodeName } = node;
+    const { nodeName } = node;
+    const name = node.name || node.id;
     if (name === "") console.error("[svelte-reactive-form] empty field name");
 
     const { defaultValue, rules } = option;
@@ -292,22 +290,41 @@ export const useForm = (
     };
   };
 
-  const onSubmit = (cb: OnSubmitCallback) => async (e: Event) => {
+  const onSubmit = (
+    successCallback: SuccessCallback,
+    errorCallback?: ErrorCallback
+  ) => async (e: Event) => {
     form$.update((v) => Object.assign(v, { submitting: true }));
     e.preventDefault();
     e.stopPropagation();
-    let data = {};
+    let data = {},
+      // errors = [],
+      valid = true;
     const { elements = [] } = <HTMLFormElement>e.currentTarget;
     for (let i = 0, len = elements.length; i < len; i++) {
-      const { name, value } = elements[i];
+      const name = elements[i].name || elements[i].id;
       if (!name) continue;
       if (cache.has(name)) {
+        let { nodeName, type, value } = elements[i];
+        switch (type) {
+          case "checkbox":
+            value = elements[i].checked ? value : "";
+            break;
+        }
         data[name] = value;
-        await _validate(name, value);
+        const result = await _validate(name, value);
+        valid = valid && result.valid; // update valid
       }
     }
+
+    if (valid) {
+      await toPromise<void>(successCallback(data, e));
+    } else {
+      errorCallback && errorCallback(get(errors$), e);
+    }
+
+    // submitting should end only after execute user callback
     form$.update((v) => Object.assign(v, { submitting: false }));
-    return cb(data, get(errors$), e);
   };
 
   const _validate = (name: string, value: any): Promise<any> => {
@@ -334,6 +351,7 @@ export const useForm = (
           Object.assign(v, { pending: false, valid, errors })
         );
         setError(name, errors);
+        return Promise.resolve({ valid, errors });
       })
       .catch(() => {
         store$.update((v) => Object.assign(v, { pending: false }));
@@ -363,28 +381,32 @@ export const useForm = (
       return resolve({ data: { [fields]: value }, errors: get(errors$) });
     });
 
-  const reset = (values: Fields, opts?: ResetFormOption) => {
-    const options = Object.assign(opts, {
+  const reset = (values: Fields, option?: ResetFormOption) => {
+    const defaultOption = {
       dirtyFields: false,
       errors: false,
-    });
-    if (!options.errors) {
-      errors$.update((v) => Object.assign(v, {})); // reset errors
-    }
-    form$.set(Object.assign({}, defaultFormState));
-    const fields = Array.from(cache.keys());
-    for (let i = 0; i < fields.length; i += 1) {
-      const [store$, _] = cache.get(fields[i]);
-      const state$ = get(store$);
-      store$.set(
-        Object.assign(defaultFieldState, {
-          errors: options.errors ? state$.errors : [],
-          value:
-            options.dirtyFields && state$.dirty
-              ? state$.value
-              : values[fields[i]],
-        })
-      );
+    };
+    if (option) {
+      option = Object.assign(defaultOption, option);
+      if (!option.errors) {
+        errors$.update((v) => Object.assign(v, {})); // reset errors
+      }
+      const fields = Array.from(cache.keys());
+      form$.set(Object.assign({}, defaultFormState));
+      for (let i = 0; i < fields.length; i += 1) {
+        const [store$, _] = cache.get(fields[i]);
+        const state$ = get(store$);
+        // FIX: bug, value is not reseting
+        store$.set(
+          Object.assign({}, defaultFieldState, {
+            errors: option.errors ? state$.errors : [],
+            value:
+              option.dirtyFields && state$.dirty
+                ? state$.value
+                : values[fields[i]],
+          })
+        );
+      }
     }
   };
 
