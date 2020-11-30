@@ -167,7 +167,7 @@ export const useForm = (
         form$.update((v) => Object.assign(v, { pending: true, valid: false }));
         const promises: Promise<ValidationResult>[] = [];
         store$.update((v: FieldState) =>
-          Object.assign(v, { dirty: true, pending: true, value })
+          Object.assign(v, { errors: [], dirty: true, pending: true, value })
         );
         for (let i = 0, len = validators.length; i < len; i++) {
           const { validate, params } = validators[i];
@@ -335,7 +335,7 @@ export const useForm = (
     //   return Promise.resolve();
     // }
     store$.update((v: FieldState) =>
-      Object.assign(v, { dirty: true, pending: true, value })
+      Object.assign(v, { errors: [], dirty: true, pending: true, value })
     );
     for (let i = 0, len = validators.length; i < len; i++) {
       const { validate, params } = validators[i];
