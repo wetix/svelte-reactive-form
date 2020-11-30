@@ -44,8 +44,8 @@ export type RuleExpression =
   | Record<string, Validator>
   | Record<string, any>;
 
-export type RegisterOption = {
-  defaultValue?: any;
+export type RegisterOption<T> = {
+  defaultValue?: T;
   rules?: RuleExpression;
 };
 
@@ -56,7 +56,10 @@ export type FieldOption = {
 };
 
 export interface FormControl {
-  register: (path: string, option?: RegisterOption) => Readable<FieldState>;
+  register: <T>(
+    path: string,
+    option?: RegisterOption<T>
+  ) => Readable<FieldState>;
   unregister: (path: string) => void;
   setValue: (path: string, value: any) => void;
   getValue: (path: string) => any;

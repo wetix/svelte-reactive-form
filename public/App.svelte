@@ -3,7 +3,6 @@
   import { required, minLength } from "../src/rules";
   import Component from "./Component.svelte";
   import Form from "./Form.svelte";
-  import * as yup from "yup";
   import UserInformation from "./UserInformation.svelte";
 
   defineRule("required", required);
@@ -200,7 +199,7 @@
           value="ok"
           use:formB$.field={{ rules: ['required'] }} /> -->
 
-        <!-- <div>
+        <div>
           age:
           <input
             name="age"
@@ -214,14 +213,8 @@
             type="text"
             use:formB$.field={{ defaultValue: 18, rules: ['required'] }} />
         </div>
-      
-        <div>
-          users:
-          <input
-            name="users[1]"
-            type="text"
-            use:formB$.field={{ defaultValue: 'Lee', rules: ['required'] }} />
-        </div>
+
+        <!-- 
 
         <div>
           users:
@@ -244,27 +237,54 @@
             type="text"
             use:formB$.field={{ defaultValue: 'John Cena', rules: ['required'] }} />
         </div> -->
-        <!-- <div>
+        <div>
           user.name.lastName[1]:
           <input
-            name="user.name[1]"
+            name="user.name.lastName[1]"
             type="text"
             use:formB$.field={{ defaultValue: 'John', rules: ['required'] }} />
         </div>
         <div>
-          user.name.lastName[4]:
+          user.name.lastName[2]:
           <input
-            name="user.name[4]"
+            name="user.name.lastName[2]"
             type="text"
-            use:formB$.field={{ defaultValue: 'Doe', rules: ['required'] }} />
-        </div> -->
-        <!-- <div>
-          users[0][1]:
+            use:formB$.field={{ rules: ['required'] }} />
+        </div>
+        <div>
+          users[0][18]:
           <input
-            name="users[0][1]"
+            name="users[0][18]"
+            type="text"
+            value="0.18"
+            use:formB$.field={{ rules: ['required'] }} />
+        </div>
+        <div>
+          users[1][1]:
+          <input
+            name="users[1][1]"
+            value="1.1"
+            type="text"
+            use:formB$.field={{ rules: ['required'] }} />
+        </div>
+
+        <div>
+          users[5][7][1]:
+          <input
+            name="users[5][7][1]"
+            value="5.7.1"
+            type="text"
+            use:formB$.field={{ rules: ['required'] }} />
+        </div>
+
+        <div>
+          users[2][2].name :
+          <input
+            name="users[2][2].name"
+            value="2.2.name"
             type="text"
             use:formB$.field={{ defaultValue: 'John Doe', rules: ['required'] }} />
-        </div> -->
+        </div>
         <!-- <div>
           users[1][2]:
           <input
@@ -272,20 +292,12 @@
             type="text"
             use:formB$.field={{ defaultValue: 'Oyster Lee', rules: ['required'] }} />
         </div> -->
-        <div>
+        <!-- <div>
           users[0].names[1].name:
           <input
             name="users[0].names[1].name"
             type="text"
             use:formB$.field={{ defaultValue: 'John Doe', rules: ['required'] }} />
-        </div>
-        <!--  -->
-        <!-- <div>
-          user.name.lastName[2]:
-          <input
-            name="user.name.lastName[2]"
-            type="text"
-            use:formB$.field={{ rules: ['required'] }} />
         </div>
 
         <div>
@@ -294,8 +306,7 @@
             name="users[4].names[0].nickName"
             type="text"
             use:formB$.field={{ rules: ['required'] }} />
-        </div>
-        -->
+        </div> -->
       {/if}
       <div>
         <button type="button" on:click={() => (editable = !editable)}>Toggle

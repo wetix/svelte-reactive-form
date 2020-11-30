@@ -42,6 +42,56 @@ const defaultFieldState = {
 
 const fields = ["INPUT", "SELECT", "TEXTAREA"];
 
+// TODO: test case for _normalizeObject
+const _normalizeObject = (data: object, name: string, value: any) => {
+  const queue: [[object, Array<string>]] = [[data, name.split(".")]];
+  while (queue.length > 0) {
+    const first = queue.shift();
+    const paths = first[1];
+    const name = paths.shift();
+    const result = name.match(/^([a-z\_\.]+)((\[\d+\])+)/i);
+
+    if (result && result.length > 2) {
+      const name = result[1];
+      // if it's not array, assign it and make it as array
+      if (!Array.isArray(first[0][name])) {
+        first[0][name] = [];
+      }
+      let cur = first[0][name];
+      const indexs = result[2].replace(/^\[+|\]+$/g, "").split("][");
+      while (indexs.length > 0) {
+        const index = parseInt(indexs.shift(), 10);
+        // if nested index is last position && parent is last position
+        if (indexs.length === 0 && paths.length === 0) {
+          cur[index] = value;
+        } else {
+          cur[index] = [];
+        }
+        cur = cur[index];
+      }
+
+      if (paths.length > 0) {
+        queue.push([cur, paths]);
+      }
+
+      continue;
+    }
+
+    if (paths.length === 0) {
+      if (Array.isArray(first[0])) {
+        first[0].push(Object.assign({}, { [name]: value }));
+      } else {
+        first[0][name] = value;
+      }
+    } else {
+      first[0][name] = {};
+      queue.push([first[0][name], paths]);
+    }
+  }
+
+  return data;
+};
+
 export const useForm = (
   config: Config = {},
   opts: FormOption = { validateOnChange: false }
@@ -58,16 +108,6 @@ export const useForm = (
   // errors should be private variable
   const errors$ = writable<Record<string, any>>({});
 
-  const _flattenObject = (obj: object, path: string | null = null): object =>
-    Object.keys(obj).reduce((acc: object, key: string, idx: number) => {
-      const newPath = [path, key].filter(Boolean).join(".");
-      return isObject(obj?.[key])
-        ? { ...acc, ..._flattenObject(obj[key], newPath) }
-        : { ...acc, [newPath]: obj[key] };
-    }, {});
-
-  const flatCfg = _flattenObject(config);
-
   const _strToValidator = (rule: string): ValidationRule => {
     const params = rule.split(/:/g);
     const ruleName = params.shift();
@@ -82,7 +122,7 @@ export const useForm = (
     };
   };
 
-  const register = (path: string, option: RegisterOption = {}) => {
+  const register = <T>(path: string, option: RegisterOption<T> = {}) => {
     const value = option.defaultValue || "";
     const store$ = writable<FieldState>(
       Object.assign({}, defaultFieldState, {
@@ -102,7 +142,7 @@ export const useForm = (
       ruleExprs = rules.reduce((acc: ValidationRule[], rule: any) => {
         const typeOfVal = typeof rule;
         if (typeOfVal === "string") {
-          acc.push(_strToValidator(rule as string));
+          acc.push(_strToValidator(<string>rule));
         } else if (typeOfVal === "function") {
           rule = rule as Function;
           if (rule.name === "")
@@ -111,14 +151,14 @@ export const useForm = (
             );
           acc.push({
             name: rule.name,
-            validate: toPromise<boolean | string>(rule as Function),
+            validate: toPromise<boolean | string>(<Function>rule),
             params: [],
           });
         }
         return acc;
       }, []);
     } else if (typeOfRule !== null && typeOfRule === "object") {
-      ruleExprs = Object.entries(rules as object).reduce(
+      ruleExprs = Object.entries(<object>rules).reduce(
         (acc: ValidationRule[], cur: [string, any]) => {
           const [ruleName, params] = cur;
           acc.push({
@@ -160,7 +200,7 @@ export const useForm = (
     }
   };
 
-  const setValue = (path: string, value: any) => {
+  const setValue = <T>(path: string, value: T) => {
     if (cache.has(path)) {
       const [store$, validators] = cache.get(path);
       if (opts.validateOnChange && validators.length > 0) {
@@ -229,7 +269,6 @@ export const useForm = (
     option = Object.assign({ rules: [], defaultValue: "" }, option);
     const selector = fields.join(",");
     while (!fields.includes(node.nodeName)) {
-      // TODO: change to select, textarea etc
       const el = <NodeElement>node.querySelector(selector);
       node = el;
       if (el) break;
@@ -250,14 +289,21 @@ export const useForm = (
     if (defaultValue) {
       node.setAttribute("value", defaultValue);
     }
-    const listeners: Array<[string, any]> = [];
+    const listeners: Array<[string, (e: Event) => void]> = [];
     const _attachEvent = (
       event: string,
       cb: (e: Event) => void,
-      opts?: any
+      opts?: object
     ) => {
       node.addEventListener(event, cb, opts);
       listeners.push([event, cb]);
+    };
+
+    const _detachEvents = () => {
+      for (let i = 0, len = listeners.length; i < len; i++) {
+        const [event, cb] = listeners[i];
+        node.removeEventListener(event, cb);
+      }
     };
 
     _attachEvent("blur", onBlur, { once: true });
@@ -283,114 +329,11 @@ export const useForm = (
         });
       },
       destroy() {
+        _detachEvents();
         unregister(name);
-        for (let i = 0, len = listeners.length; i < len; i++) {
-          const [event, cb] = listeners[i];
-          node.removeEventListener(event, cb);
-        }
         unsubscribe && unsubscribe();
       },
     };
-  };
-
-  // requirements :
-  // - ✅ user[0]
-  // - ✅ user.names[0]
-  // - users[0][1][2]
-  // - users[0][1].lastName[2]
-  // - users[0].names[1].name
-  // queue = [[0: data, 1: paths: ]]
-  // examples : users[0].names[1].name
-  // queue = [[0: {}, 1: ["users[0]", "names[1]", "name"]]]
-  // 1. while loop
-  // 2. shift first item on queue, queue = [] (shifted item => [0: {}, 1: ["users[0]", "names[1]", "name"]])
-  // 3. shift first item on paths, paths: ["names[1]", "name"]
-  // 4. path => "users[0]"
-  // 5. isArray => queue.push([0: data.users[0], 1: ["names[1]", "name"]])
-  // 6. !isArray => queue.push([0: data.users[0], 1: ["names[1]", "name"]])
-  // 7. 2nd while loop
-  // 8. [0: data.users[0], 1: ["names[1]", "name"]]
-  // 9. shift first item on queue, queue = [] (shifted item => [0: data.users[0], 1: ["names[1]", "name"]])
-  // 10. shift first item on paths, paths: ["names[1]", "name"]
-  // 11. path => "names[1]"
-
-  // users = [{ names: [ { name: John Doe } ] } ]
-  const _normalizeObject = (data: object, name: string, value: any) => {
-    const pattern = /^[a-z\_\.]*(\[(\d+)\])+/i;
-    const queue: [[object, Array<string>]] = [[data, name.split(".")]];
-    while (queue.length > 0) {
-      console.log("queue =>", JSON.parse(JSON.stringify(queue)));
-      const first = queue.shift();
-      const paths = first[1];
-      const name = paths.shift();
-      console.log("**************************************");
-      const result = name.match(pattern);
-      console.log("Field name =>", result); // users[0]
-      if (result && result.length > 2) {
-        const name = result[0].split(result[1])[0];
-        const index = parseInt(result[2], 10);
-        // if contain array index
-        // if (pattern.test(name)) {
-        //   console.log("========= KEEP GOING ======");
-        //   queue.push([first[0], [name]]);
-        //   continue;
-        // }
-        if (Array.isArray(first[0][name])) {
-          // is array
-          console.log("%c THIS IS AN ARRAY", "color: green; font-size:16px;");
-          if (paths.length === 0) {
-            first[0][name][index] = value;
-          } else {
-            // first[0][name] ={};
-            queue.push([first[0][name], paths]);
-          }
-        } else {
-          // is not array
-          console.log("%c THIS IS NOT AN ARRAY", "color: red; font-size:16px;");
-          let arr = [];
-
-          if (Array.isArray(first[0])) {
-            first[0][first.length - 1] = { [name]: new Array(index + 1) };
-          } else {
-            first[0][name] = arr;
-          }
-
-          if (paths.length === 0) {
-            arr[index] = value;
-          } else {
-            if (Array.isArray(first[0])) {
-              queue.push([first[0][first.length - 1], paths]);
-            } else {
-              queue.push([first[0][name], paths]);
-            }
-          }
-        }
-
-        continue;
-      }
-
-      console.log("NAME =====>", name);
-
-      if (paths.length === 0) first[0][name] = value;
-      else {
-        first[0][name] = first[0][name] || {};
-        queue.push([first[0][name], paths]);
-      }
-    }
-    // for (let i = 0; i < paths.length; i++) {
-    //   if (i === paths.length - 1) {
-    //     data[paths[i]] = value;
-    //     break;
-    //   } else
-    //     data = _normalizeObject(
-    //       Object.assign({}, data, { [paths[i]]: {} }),
-    //       paths[i],
-    //       value
-    //     );
-    // }
-    // return data;
-    console.log("output =>", data);
-    return data;
   };
 
   const onSubmit = (
@@ -401,21 +344,22 @@ export const useForm = (
     e.preventDefault();
     e.stopPropagation();
     let data = {},
+      // TODO: errors
       // errors = [],
       valid = true;
     const { elements = [] } = <HTMLFormElement>e.currentTarget;
     for (let i = 0, len = elements.length; i < len; i++) {
       const name = elements[i].name || elements[i].id;
       if (!name) continue;
+      // TODO: shouldn't only loop elements, should check cache keys which not exists in elements as well
       if (cache.has(name)) {
+        // TODO: check checkbox and radio
         let { nodeName, type, value } = elements[i];
         switch (type) {
           case "checkbox":
             value = elements[i].checked ? value : "";
             break;
         }
-        console.log("field =>", name);
-        // data[name] = value;
         data = _normalizeObject(data, name, value);
         const result = await _validate(name, value);
         valid = valid && result.valid; // update valid
