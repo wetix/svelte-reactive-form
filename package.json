@@ -1,6 +1,6 @@
 {
   "name": "svelte-reactive-form",
-  "version": "0.4.0-beta",
+  "version": "0.4.1-beta",
   "description": "",
   "author": "si3nloong <sianloong90@gmail.com>",
   "homepage": "",
@@ -26,7 +26,7 @@
   "scripts": {
     "dev": "rollup --config rollup.dev.config.js -w",
     "start": "sirv public --port 5500",
-    "build": "rollup -c",
+    "build": "npm run tsd && rollup -c",
     "prepublishOnly": "npm run tsd && npm run build",
     "validate": "svelte-check",
     "tsd": "tsc -p tsdef.json",
@@ -56,6 +56,7 @@
     "svelte-preprocess": "^4.6.1",
     "tslib": "^2.0.3",
     "typescript": "^4.1.2",
+    "uuid": "^8.3.1",
     "yup": "^0.31.0"
   },
   "peerDependencies": {

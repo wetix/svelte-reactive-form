@@ -6,7 +6,7 @@
   import type { FormControl, RuleExpression } from "../types";
 
   export let name = "";
-  export let defaultValue = "";
+  export let defaultValue: any = "";
   export let control: Readable<FormControl>;
   export let rules: RuleExpression = "";
   export let type: "hidden" | "text" = "hidden";
