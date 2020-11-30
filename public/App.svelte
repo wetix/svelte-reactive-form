@@ -3,7 +3,6 @@
   import { required, minLength } from "../src/rules";
   import Component from "./Component.svelte";
   import Form from "./Form.svelte";
-  import * as yup from "yup";
   import UserInformation from "./UserInformation.svelte";
 
   defineRule("required", required);
@@ -251,9 +250,36 @@
             use:formB$.field={{ defaultValue: 'John', rules: ['required'] }} />
         </div>
         <div>
-          users[0][1]:
+          users[0][18]:
           <input
-            name="users[0][1]"
+            name="users[0][18]"
+            type="text"
+            value="0.18"
+            use:formB$.field={{ rules: ['required'] }} />
+        </div>
+        <div>
+          users[1][1]:
+          <input
+            name="users[1][1]"
+            value="1.1"
+            type="text"
+            use:formB$.field={{ rules: ['required'] }} />
+        </div>
+
+        <div>
+          users[5][7][1]:
+          <input
+            name="users[5][7][1]"
+            value="5.7.1"
+            type="text"
+            use:formB$.field={{ rules: ['required'] }} />
+        </div>
+
+        <div>
+          users[2][2].name :
+          <input
+            name="users[2][2].name"
+            value="2.2.name"
             type="text"
             use:formB$.field={{ rules: ['required'] }} />
         </div>

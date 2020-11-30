@@ -26,7 +26,7 @@
   "scripts": {
     "dev": "rollup --config rollup.dev.config.js -w",
     "start": "sirv public --port 5500",
-    "build": "rollup -c",
+    "build": "npm run tsd && rollup -c",
     "prepublishOnly": "npm run tsd && npm run build",
     "validate": "svelte-check",
     "tsd": "tsc -p tsdef.json",
