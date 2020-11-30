@@ -247,6 +247,9 @@ export const useForm = (
       setTouched(name, true);
     };
 
+    if (defaultValue) {
+      node.setAttribute("value", defaultValue);
+    }
     const listeners: Array<[string, any]> = [];
     const _attachEvent = (
       event: string,
@@ -290,6 +293,81 @@ export const useForm = (
     };
   };
 
+  // requirements :
+  // - users[0][1][2]
+  // - users[0][1].lastName[2]
+  // - users[0].names[1].name
+  // queue = [[0: data, 1: paths: ]]
+  // examples : users[0].names[1].name
+  // queue = [[0: {}, 1: ["users[0]", "names[1]", "name"]]]
+  // 1. while loop
+  // 2. shift first item on queue, queue = [] (shifted item => [0: {}, 1: ["users[0]", "names[1]", "name"]])
+  // 3. shift first item on paths, paths: ["names[1]", "name"]
+  // 4. path => "users[0]"
+  // 5. isArray => queue.push([0: data.users[0], 1: ["names[1]", "name"]])
+  // 6. !isArray => queue.push([0: data.users[0], 1: ["names[1]", "name"]])
+  // 7. 2nd while loop
+  // 8. [0: data.users[0], 1: ["names[1]", "name"]]
+  // 9. shift first item on queue, queue = [] (shifted item => [0: data.users[0], 1: ["names[1]", "name"]])
+  // 10. shift first item on paths, paths: ["names[1]", "name"]
+  // 11. path => "names[1]"
+  const _normalizeObject = (data: object, name: string, value: any) => {
+    const queue: [[object, Array<string>]] = [[data, name.split(".")]];
+    while (queue.length > 0) {
+      const first = queue.shift();
+      const paths = first[1];
+      const name = paths.shift();
+      console.log("**************************************");
+      const result = name.match(/^[a-z\_\.]+(\[(\d+)\])+/i);
+      console.log("Field name =>", result); // users[0]
+      if (result && result.length > 2) {
+        const name = result[1];
+        const index = parseInt(result[2], 10);
+        if (Array.isArray(first[0][name])) {
+          // is array
+          if (paths.length === 0) {
+            first[0][name][index] = value;
+          } else {
+            // first[0][name] ={};
+            queue.push([first[0][name], paths]);
+          }
+        } else {
+          // is not array
+          let arr = [];
+          first[0][name] = arr;
+          if (paths.length === 0) {
+            arr[index] = value;
+          } else {
+            console.log("HERE !!!!!", [first[0][name], paths]);
+            queue.push([first[0][name], paths]);
+          }
+        }
+
+        continue;
+      }
+
+      if (paths.length === 0) first[0][name] = value;
+      else {
+        first[0][name] = {};
+        queue.push([first[0][name], paths]);
+      }
+    }
+    // for (let i = 0; i < paths.length; i++) {
+    //   if (i === paths.length - 1) {
+    //     data[paths[i]] = value;
+    //     break;
+    //   } else
+    //     data = _normalizeObject(
+    //       Object.assign({}, data, { [paths[i]]: {} }),
+    //       paths[i],
+    //       value
+    //     );
+    // }
+    // return data;
+    console.log("output =>", data);
+    return data;
+  };
+
   const onSubmit = (
     successCallback: SuccessCallback,
     errorCallback?: ErrorCallback
@@ -311,7 +389,9 @@ export const useForm = (
             value = elements[i].checked ? value : "";
             break;
         }
-        data[name] = value;
+        console.log("field =>", name);
+        // data[name] = value;
+        data = _normalizeObject(data, name, value);
         const result = await _validate(name, value);
         valid = valid && result.valid; // update valid
       }
