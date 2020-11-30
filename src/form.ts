@@ -294,6 +294,8 @@ export const useForm = (
   };
 
   // requirements :
+  // - ✅ user[0]
+  // - ✅ user.names[0]
   // - users[0][1][2]
   // - users[0][1].lastName[2]
   // - users[0].names[1].name
@@ -311,20 +313,31 @@ export const useForm = (
   // 9. shift first item on queue, queue = [] (shifted item => [0: data.users[0], 1: ["names[1]", "name"]])
   // 10. shift first item on paths, paths: ["names[1]", "name"]
   // 11. path => "names[1]"
+
+  // users = [{ names: [ { name: John Doe } ] } ]
   const _normalizeObject = (data: object, name: string, value: any) => {
+    const pattern = /^[a-z\_\.]*(\[(\d+)\])+/i;
     const queue: [[object, Array<string>]] = [[data, name.split(".")]];
     while (queue.length > 0) {
+      console.log("queue =>", JSON.parse(JSON.stringify(queue)));
       const first = queue.shift();
       const paths = first[1];
       const name = paths.shift();
       console.log("**************************************");
-      const result = name.match(/^[a-z\_\.]+(\[(\d+)\])+/i);
+      const result = name.match(pattern);
       console.log("Field name =>", result); // users[0]
       if (result && result.length > 2) {
-        const name = result[1];
+        const name = result[0].split(result[1])[0];
         const index = parseInt(result[2], 10);
+        // if contain array index
+        // if (pattern.test(name)) {
+        //   console.log("========= KEEP GOING ======");
+        //   queue.push([first[0], [name]]);
+        //   continue;
+        // }
         if (Array.isArray(first[0][name])) {
           // is array
+          console.log("%c THIS IS AN ARRAY", "color: green; font-size:16px;");
           if (paths.length === 0) {
             first[0][name][index] = value;
           } else {
@@ -333,22 +346,34 @@ export const useForm = (
           }
         } else {
           // is not array
+          console.log("%c THIS IS NOT AN ARRAY", "color: red; font-size:16px;");
           let arr = [];
-          first[0][name] = arr;
+
+          if (Array.isArray(first[0])) {
+            first[0][first.length - 1] = { [name]: new Array(index + 1) };
+          } else {
+            first[0][name] = arr;
+          }
+
           if (paths.length === 0) {
             arr[index] = value;
           } else {
-            console.log("HERE !!!!!", [first[0][name], paths]);
-            queue.push([first[0][name], paths]);
+            if (Array.isArray(first[0])) {
+              queue.push([first[0][first.length - 1], paths]);
+            } else {
+              queue.push([first[0][name], paths]);
+            }
           }
         }
 
         continue;
       }
 
+      console.log("NAME =====>", name);
+
       if (paths.length === 0) first[0][name] = value;
       else {
-        first[0][name] = {};
+        first[0][name] = first[0][name] || {};
         queue.push([first[0][name], paths]);
       }
     }

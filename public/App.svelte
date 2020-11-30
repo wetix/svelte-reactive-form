@@ -214,20 +214,7 @@
             type="text"
             use:formB$.field={{ defaultValue: 18, rules: ['required'] }} />
         </div>
-        <div>
-          users:
-          <input
-            name="users[2]"
-            type="text"
-            use:formB$.field={{ defaultValue: 'Oyster', rules: ['required'] }} />
-        </div>
-        <div>
-          users:
-          <input
-            name="users[0]"
-            type="text"
-            use:formB$.field={{ defaultValue: 'John Cena', rules: ['required'] }} />
-        </div>
+      
         <div>
           users:
           <input
@@ -243,27 +230,55 @@
             type="text"
             use:formB$.field={{ defaultValue: '', rules: ['required'] }} />
         </div> -->
+        <!-- <div>
+          users:
+          <input
+            name="users[2]"
+            type="text"
+            use:formB$.field={{ defaultValue: 'Oyster', rules: ['required'] }} />
+        </div>
         <div>
+          users:
+          <input
+            name="users[0]"
+            type="text"
+            use:formB$.field={{ defaultValue: 'John Cena', rules: ['required'] }} />
+        </div> -->
+        <!-- <div>
           user.name.lastName[1]:
           <input
-            name="user.name.lastName[1]"
+            name="user.name[1]"
             type="text"
             use:formB$.field={{ defaultValue: 'John', rules: ['required'] }} />
         </div>
         <div>
+          user.name.lastName[4]:
+          <input
+            name="user.name[4]"
+            type="text"
+            use:formB$.field={{ defaultValue: 'Doe', rules: ['required'] }} />
+        </div> -->
+        <!-- <div>
           users[0][1]:
           <input
             name="users[0][1]"
             type="text"
-            use:formB$.field={{ rules: ['required'] }} />
-        </div>
+            use:formB$.field={{ defaultValue: 'John Doe', rules: ['required'] }} />
+        </div> -->
         <!-- <div>
+          users[1][2]:
+          <input
+            name="users[1][0][2]"
+            type="text"
+            use:formB$.field={{ defaultValue: 'Oyster Lee', rules: ['required'] }} />
+        </div> -->
+        <div>
           users[0].names[1].name:
           <input
             name="users[0].names[1].name"
             type="text"
-            use:formB$.field={{ rules: ['required'] }} />
-        </div> -->
+            use:formB$.field={{ defaultValue: 'John Doe', rules: ['required'] }} />
+        </div>
         <!--  -->
         <!-- <div>
           user.name.lastName[2]:
