@@ -181,7 +181,7 @@
     </form>
   </div>
   <div class="column">
-    <form name="form-b" on:submit|preventDefault={formB$.onSubmit(console.log)}>
+    <form name="form-b" on:submit={formB$.onSubmit(console.log)}>
       {#if editable}
         <div
           use:formB$.field={{ defaultValue: '', rules: ['required', asyncValidation] }}>
@@ -282,6 +282,14 @@
           <input
             name="users[2][2].name"
             value="2.2.name"
+            type="text"
+            use:formB$.field={{ defaultValue: 'John Doe', rules: ['required'] }} />
+        </div>
+        <div>
+          users[2][2].nickName :
+          <input
+            name="users[2][2].nickName"
+            value="2.2.nickName"
             type="text"
             use:formB$.field={{ defaultValue: 'John Doe', rules: ['required'] }} />
         </div>

@@ -62,9 +62,16 @@ const _normalizeObject = (data: object, name: string, value: any) => {
       while (indexs.length > 0) {
         const index = parseInt(indexs.shift(), 10);
         // if nested index is last position && parent is last position
-        if (indexs.length === 0 && paths.length === 0) {
-          cur[index] = value;
-        } else {
+        if (indexs.length === 0) {
+          if (paths.length === 0) {
+            cur[index] = value;
+          } else {
+            if (!cur[index]) {
+              cur[index] = {};
+            }
+          }
+        } else if (!cur[index]) {
+          // set to empty array if it's undefined
           cur[index] = [];
         }
         cur = cur[index];
@@ -78,11 +85,7 @@ const _normalizeObject = (data: object, name: string, value: any) => {
     }
 
     if (paths.length === 0) {
-      if (Array.isArray(first[0])) {
-        first[0].push(Object.assign({}, { [name]: value }));
-      } else {
-        first[0][name] = value;
-      }
+      first[0][name] = value;
     } else {
       first[0][name] = {};
       queue.push([first[0][name], paths]);
