@@ -84,7 +84,9 @@ How to use
 
 API
 --------------------------
-Check out the [API](https://github.com/wetix/svelte-reactive-form/blob/master/docs/API.md) documentation for using:
+Check out the [API](https://github.com/wetix/svelte-reactive-form/blob/master/docs/API.md) documentation.
+
+For advance usage, you may refer to [Advance API](https://github.com/wetix/svelte-reactive-form/blob/master/docs/ADVANCE_USAGE.md).
 
 Sponsors
 --------------------------

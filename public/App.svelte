@@ -40,21 +40,6 @@
     setValue("custom_field", customValue);
   };
 
-  const items = [
-    {
-      name: "name.firstName",
-      type: "text",
-    },
-    {
-      name: "name.lastName",
-      type: "type",
-    },
-    {
-      name: "dob",
-      type: "date",
-    },
-  ];
-
   const onChange = (v, node) => {};
 
   const formB$ = useForm({}, { validateOnChange: true });
@@ -181,7 +166,7 @@
     </form>
   </div>
   <div class="column">
-    <form name="form-b" on:submit={formB$.onSubmit(console.log)}>
+    <form name="form-b" on:submit={formB$.onSubmit(console.log, console.log)}>
       {#if editable}
         <div
           use:formB$.field={{ defaultValue: '', rules: ['required', asyncValidation] }}>

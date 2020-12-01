@@ -90,6 +90,14 @@
         rules: { required, asyncFunc },
     });
 </script>
+
+<div>Default Value : {$state.defaultValue}</div>
+<div>Value : {$state.value}</div>
+<div>Pending : {$state.pending}</div>
+<div>Valid : {$state.valid}</div>
+<div>Dirty : {$state.dirty}</div>
+<div>Touched : {$state.touched}</div>
+<div>Errors : {$state.errors}</div>
 ```
 
 <br />

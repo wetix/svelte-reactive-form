@@ -86,12 +86,28 @@ const _normalizeObject = (data: object, name: string, value: any) => {
     if (paths.length === 0) {
       first[0][name] = value;
     } else {
-      first[0][name] = {};
+      if (!first[0][name]) {
+        first[0][name] = {};
+      }
       queue.push([first[0][name], paths]);
     }
   }
 
   return data;
+};
+
+const _strToValidator = (rule: string): ValidationRule => {
+  const params = rule.split(/:/g);
+  const ruleName = params.shift();
+  if (!resolveRule(ruleName))
+    console.error(
+      `[svelte-reactive-form] invalid validation function "${ruleName}"`
+    );
+  return {
+    name: ruleName,
+    validate: toPromise<boolean | string>(resolveRule(ruleName)),
+    params: params[0] ? params[0].split(",") : [],
+  };
 };
 
 export const useForm = (
@@ -109,20 +125,6 @@ export const useForm = (
 
   // errors should be private variable
   const errors$ = writable<Record<string, any>>({});
-
-  const _strToValidator = (rule: string): ValidationRule => {
-    const params = rule.split(/:/g);
-    const ruleName = params.shift();
-    if (!resolveRule(ruleName))
-      console.error(
-        `[svelte-reactive-form] invalid validation function "${ruleName}"`
-      );
-    return {
-      name: ruleName,
-      validate: toPromise<boolean | string>(resolveRule(ruleName)),
-      params: params[0] ? params[0].split(",") : [],
-    };
-  };
 
   const register = <T>(path: string, option: RegisterOption<T> = {}) => {
     const value = option.defaultValue || "";
@@ -262,7 +264,7 @@ export const useForm = (
     if (cache.has(path)) {
       const [store$, _] = cache.get(path);
       const state = get<FieldState>(store$);
-      return state.value as T;
+      return <T>state.value;
     }
     return null;
   };
@@ -440,28 +442,40 @@ export const useForm = (
       dirtyFields: false,
       errors: false,
     };
-    if (option) {
-      option = Object.assign(defaultOption, option);
-      if (!option.errors) {
-        errors$.update((v) => Object.assign(v, {})); // reset errors
-      }
-      const fields = Array.from(cache.keys());
-      form$.set(Object.assign({}, defaultFormState));
-      for (let i = 0; i < fields.length; i += 1) {
-        const [store$, _] = cache.get(fields[i]);
-        const state$ = get(store$);
-        // FIX: bug, value is not reseting
-        store$.set(
-          Object.assign({}, defaultFieldState, {
-            errors: option.errors ? state$.errors : [],
-            value:
-              option.dirtyFields && state$.dirty
-                ? state$.value
-                : values[fields[i]],
-          })
-        );
-      }
+    option = Object.assign(defaultOption, option || {});
+    if (option.errors) {
+      errors$.set({}); // reset errors
     }
+    const fields = Array.from(cache.values());
+    for (let i = 0, len = fields.length; i < len; i++) {
+      const [store$, _] = fields[i];
+      store$.update((v) => {
+        const { defaultValue, value } = v;
+        console.log(defaultValue, value);
+        return Object.assign({}, defaultFieldState, {
+          defaultValue,
+          value: defaultValue,
+        });
+      });
+    }
+    console.log(fields);
+    console.log(option);
+    // if (option) {
+    //   form$.set(Object.assign({}, defaultFormState));
+    //     const [store$, _] = cache.get(fields[i]);
+    //     const state$ = get(store$);
+    //     // FIX: bug, value is not reseting
+    //     store$.set(
+    //       Object.assign({}, defaultFieldState, {
+    //         errors: option.errors ? state$.errors : [],
+    //         value:
+    //           option.dirtyFields && state$.dirty
+    //             ? state$.value
+    //             : values[fields[i]],
+    //       })
+    //     );
+    //   }
+    // }
   };
 
   return {
