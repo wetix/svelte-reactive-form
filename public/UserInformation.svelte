@@ -6,16 +6,12 @@
   let items = [];
 
   const form$ = useForm();
-  const { onSubmit } = form$;
+  const { handleSubmit } = form$;
 
   const handleAdd = () => {
     items = [...items, { id: uuidv4(), name: "" }];
 
     console.log(items);
-  };
-
-  const handleSubmit = (v) => {
-    console.log(v);
   };
 
   const schema = yup.object().shape({
@@ -58,7 +54,7 @@
   /* your styles go here */
 </style>
 
-<form on:submit|preventDefault={form$.onSubmit(afterSubmit)}>
+<form on:submit|preventDefault={handleSubmit(afterSubmit)}>
   <div><button type="button" on:click={handleAdd}>ADD</button></div>
   {#each items as item, i (item.id)}
     <div>

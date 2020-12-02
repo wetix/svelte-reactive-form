@@ -1,4 +1,9 @@
-<p align="center">
+
+# Svelte Reactive Form
+
+> A better version of form validation for [Svelte](https://svelte.dev). 
+
+<p>
 
 [![Build Status](https://github.com/wetix/svelte-reactive-form/workflows/ci/badge.svg?branch=master)](https://github.com/wetix/svelte-reactive-form)
 [![npm](https://img.shields.io/npm/v/svelte-reactive-form.svg)](https://www.npmjs.com/package/svelte-reactive-form)
@@ -7,9 +12,6 @@
 
 </p>
 
-# Svelte Reactive Form
-
-> A better version of form validation. 
 
 Installation and Usage
 --------------------------
@@ -25,11 +27,11 @@ yarn add svelte-reactive-form
 Features
 --------------------------
 - Simple
+- No extra dependency
 - TypeScript as first class citizen
 - Custom validation
 - Reactive 
-- Flexible
-- Configurable
+- Flexible & Configurable
 
 How to use
 --------------------------
@@ -49,7 +51,7 @@ How to use
 
   // initialize the form instance
   const form$ = useForm();
-  const { field, register, setValue, control, onSubmit } = form$;
+  const { field, register, setValue, control, handleSubmit } = form$;
 
   // you can register your field manually
   register("pin", { 
@@ -57,15 +59,12 @@ How to use
     rules: ["required", "minLength:4", "numeric"]
   });
 
-  const handleSubmit = (v) => {
+  const successCallback = (v) => {
     console.log(v)
   }
 </script>
 
-<style>
-</style>
-
-<form on:submit={onSubmit(handleSubmit)}>
+<form on:submit={handleSubmit(successCallback)}>
   <Field {control} name="name" rules="required" let:errors let:onChange>
     <Component {onChange} />
     {#each errors as item}
@@ -86,7 +85,7 @@ API
 --------------------------
 Check out the [API](https://github.com/wetix/svelte-reactive-form/blob/master/docs/API.md) documentation.
 
-For advance usage, you may refer to [Advance API](https://github.com/wetix/svelte-reactive-form/blob/master/docs/ADVANCE_USAGE.md).
+For advanced usage, you may refer to [Advanced API](https://github.com/wetix/svelte-reactive-form/blob/master/docs/ADVANCED_USAGE.md).
 
 Sponsors
 --------------------------

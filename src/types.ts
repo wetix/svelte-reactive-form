@@ -52,7 +52,7 @@ export type RegisterOption<T> = {
 export type FieldOption = {
   rules?: RuleExpression;
   defaultValue?: any;
-  onChange?: (state: FieldState, node: HTMLElement) => void;
+  handleChange?: (state: FieldState, node: HTMLElement) => void;
 };
 
 export interface FormControl {
@@ -80,7 +80,7 @@ export interface Form extends Readable<FormState>, FormControl {
   field: UseField;
   errors: FieldErrors;
   validate: any;
-  onSubmit: (
+  handleSubmit: (
     success: SuccessCallback,
     error?: ErrorCallback
   ) => (e: Event) => void;

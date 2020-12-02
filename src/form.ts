@@ -43,7 +43,10 @@ const fields = ["INPUT", "SELECT", "TEXTAREA"];
 
 // TODO: test case for _normalizeObject
 const _normalizeObject = (data: object, name: string, value: any) => {
-  const queue: [[object, Array<string>]] = [[data, name.split(".")]];
+  const escape = name.match(/^\[(.*)\]$/);
+  const queue: [[object, Array<string>]] = [
+    [data, escape ? [escape[1]] : name.split(".")],
+  ];
   while (queue.length > 0) {
     const first = queue.shift();
     const paths = first[1];
@@ -269,7 +272,7 @@ export const useForm = (
     return null;
   };
 
-  const useField = (node: NodeElement, option: FieldOption = {}) => {
+  const _useField = (node: NodeElement, option: FieldOption = {}) => {
     option = Object.assign({ rules: [], defaultValue: "" }, option);
     const selector = fields.join(",");
     while (!fields.includes(node.nodeName)) {
@@ -277,7 +280,6 @@ export const useForm = (
       node = el;
       if (el) break;
     }
-    const { nodeName } = node;
     const name = node.name || node.id;
     if (name === "") console.error("[svelte-reactive-form] empty field name");
 
@@ -312,26 +314,18 @@ export const useForm = (
 
     _attachEvent("blur", onBlur, { once: true });
     if (opts.validateOnChange) {
-      if (["INPUT", "TEXTAREA"].includes(nodeName))
-        _attachEvent("input", onChange);
-      else if (nodeName === "SELECT") _attachEvent("change", onChange);
+      _attachEvent("input", onChange);
+      _attachEvent("change", onChange);
     }
 
     let unsubscribe;
-    if (option.onChange) {
+    if (option.handleChange) {
       unsubscribe = state$.subscribe((v: FieldState) => {
-        option.onChange(v, node);
+        option.handleChange(v, node);
       });
     }
 
     return {
-      update(newOption: FieldOption = {}) {
-        // if option updated, re-register the validation rules
-        register(name, {
-          defaultValue: newOption.defaultValue || "",
-          rules: newOption.rules,
-        });
-      },
       destroy() {
         _detachEvents();
         unregister(name);
@@ -340,7 +334,21 @@ export const useForm = (
     };
   };
 
-  const onSubmit = (
+  const useField = (node: NodeElement, option: FieldOption = {}) => {
+    let field = _useField(node, option);
+
+    return {
+      update(newOption: FieldOption = {}) {
+        field.destroy();
+        field = _useField(node, newOption);
+      },
+      destroy() {
+        field.destroy();
+      },
+    };
+  };
+
+  const handleSubmit = (
     successCallback: SuccessCallback,
     errorCallback?: ErrorCallback
   ) => async (e: Event) => {
@@ -450,32 +458,13 @@ export const useForm = (
     for (let i = 0, len = fields.length; i < len; i++) {
       const [store$, _] = fields[i];
       store$.update((v) => {
-        const { defaultValue, value } = v;
-        console.log(defaultValue, value);
+        const { defaultValue } = v;
         return Object.assign({}, defaultFieldState, {
           defaultValue,
           value: defaultValue,
         });
       });
     }
-    console.log(fields);
-    console.log(option);
-    // if (option) {
-    //   form$.set(Object.assign({}, defaultFormState));
-    //     const [store$, _] = cache.get(fields[i]);
-    //     const state$ = get(store$);
-    //     // FIX: bug, value is not reseting
-    //     store$.set(
-    //       Object.assign({}, defaultFieldState, {
-    //         errors: option.errors ? state$.errors : [],
-    //         value:
-    //           option.dirtyFields && state$.dirty
-    //             ? state$.value
-    //             : values[fields[i]],
-    //       })
-    //     );
-    //   }
-    // }
   };
 
   return {
@@ -512,7 +501,7 @@ export const useForm = (
     getValue,
     setError,
     setTouched,
-    onSubmit,
+    handleSubmit,
     reset,
     validate,
   };

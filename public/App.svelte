@@ -2,6 +2,7 @@
   import { useForm, Field, defineRule } from "../src/index";
   import { required, minLength } from "../src/rules";
   import Component from "./Component.svelte";
+  import DynamicField from "./DynamicField.svelte";
   import Form from "./Form.svelte";
   import UserInformation from "./UserInformation.svelte";
 
@@ -12,7 +13,7 @@
   });
 
   const form$ = useForm({}, { validateOnChange: true });
-  const { register, setValue, control, onSubmit } = form$;
+  const { register, setValue, control, handleSubmit } = form$;
 
   let editable = false;
   register("empty_option_field");
@@ -22,7 +23,7 @@
   });
 
   let toggle = true;
-  const handleSubmit = (v) => {
+  const successCb = (v) => {
     console.log("submit =>", v);
   };
 
@@ -69,7 +70,7 @@
 
 <section class="row">
   <div class="column">
-    <form on:submit={onSubmit(handleSubmit)}>
+    <form on:submit={handleSubmit(successCb)}>
       <div>
         <Field
           {control}
@@ -166,7 +167,9 @@
     </form>
   </div>
   <div class="column">
-    <form name="form-b" on:submit={formB$.onSubmit(console.log, console.log)}>
+    <form
+      name="form-b"
+      on:submit={formB$.handleSubmit(console.log, console.log)}>
       {#if editable}
         <div
           use:formB$.field={{ defaultValue: '', rules: ['required', asyncValidation] }}>
@@ -188,6 +191,13 @@
           age:
           <input
             name="age"
+            type="text"
+            use:formB$.field={{ defaultValue: 18, rules: ['required'] }} />
+        </div>
+        <div>
+          Raw (user.age):
+          <input
+            name="[user.age]"
             type="text"
             use:formB$.field={{ defaultValue: 18, rules: ['required'] }} />
         </div>
@@ -313,6 +323,7 @@
         {#if $formB$.submitting}Submit...{:else}Submit{/if}
       </button>
     </form>
+    <DynamicField />
     <UserInformation />
   </div>
 </section>
