@@ -14,7 +14,21 @@ interface FieldProps {
 }
 
 declare module "svelte-reactive-form" {
-  export declare class Field extends SvelteComponentTyped<FieldProps, {}, {}> {}
+  export declare class Field extends SvelteComponentTyped<FieldProps, {}, {}> {
+    $$prop_def: FieldProps;
+    $$slot_def: {
+      default: {
+        pending: boolean;
+        valid: boolean;
+        errors: Array<string>;
+        dirty: boolean;
+        touched: boolean;
+        onChange: (_: Event | CustomEvent | any) => void;
+        onBlur: () => void;
+        value: any;
+      };
+    };
+  }
 }
 
 export { Field, useForm, defineRule };
