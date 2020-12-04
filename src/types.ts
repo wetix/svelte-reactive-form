@@ -1,20 +1,16 @@
-import type { Readable } from "svelte/store";
+import type { Readable, Writable } from "svelte/store";
 
 export type Fields = Record<string, any>;
 
 export type FieldValue = any;
 
-export type Config = {
-  [name: string]:
-    | {
-        value: FieldValue;
-        defaultValue?: FieldValue;
-      }
-    | Config;
-};
+interface Resolver {
+  validate(data: any): Promise<any>;
+}
 
-export type FormOption = {
-  validateOnChange: boolean;
+export type Config = {
+  resolver?: Resolver;
+  validateOnChange?: boolean;
 };
 
 export type SuccessCallback = (
@@ -80,7 +76,7 @@ export interface Form extends Readable<FormState>, FormControl {
   field: UseField;
   errors: FieldErrors;
   validate: any;
-  handleSubmit: (
+  onSubmit: (
     success: SuccessCallback,
     error?: ErrorCallback
   ) => (e: Event) => void;
@@ -103,6 +99,10 @@ export type FieldState = {
   valid: boolean;
   errors: string[];
 };
+
+export interface FieldStateStore extends Writable<FieldState> {
+  destroy(): void;
+}
 
 export type ValidationRule = {
   name: string;

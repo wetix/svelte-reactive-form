@@ -6,7 +6,7 @@
   let name = "default";
   let value = "";
   let params = [3];
-  const form$ = useForm({}, { validateOnChange: true });
+  const form$ = useForm({ validateOnChange: true });
   const { field } = form$;
 
   const handleInput = (e) => {

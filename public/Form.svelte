@@ -2,7 +2,7 @@
   import { useForm } from "../src/index";
   import type { FieldState } from "../src/types";
 
-  const form$ = useForm({}, { validateOnChange: true });
+  const form$ = useForm({ validateOnChange: true });
   const { field, getValue } = form$;
 
   let desc = "";

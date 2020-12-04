@@ -12,8 +12,8 @@
     return /[0-9]+/.test(val) || "invalid phone number format";
   });
 
-  const form$ = useForm({}, { validateOnChange: true });
-  const { register, setValue, control, handleSubmit } = form$;
+  const form$ = useForm({ validateOnChange: true });
+  const { register, setValue, validate, control, onSubmit } = form$;
 
   let editable = false;
   register("empty_option_field");
@@ -43,11 +43,22 @@
 
   const onChange = (v, node) => {};
 
-  const formB$ = useForm({}, { validateOnChange: true });
+  const formB$ = useForm({ validateOnChange: true });
   const customField$ = formB$.register("custom_field", {
     defaultValue: "Custom",
     rules: ["required", "minLength:10"],
   });
+
+  const toggleRule = () => {
+    validate();
+    // rules = [asyncValidation, "minLength:20"];
+  };
+
+  let rules = [required, asyncValidation, "minLength:6"];
+
+  const onInput = (e: Event) => {
+    formB$.setValue("custom_field", (<HTMLInputElement>e.target).value);
+  };
 </script>
 
 <style>
@@ -70,13 +81,13 @@
 
 <section class="row">
   <div class="column">
-    <form on:submit={handleSubmit(successCb)}>
+    <form on:submit={onSubmit(successCb)}>
       <div>
         <Field
           {control}
           name="name"
           defaultValue="Testing"
-          rules={[required, asyncValidation, 'minLength:6']}
+          {rules}
           let:dirty
           let:touched
           let:pending
@@ -97,6 +108,7 @@
           <div>Touched :{touched}</div>
           <div>Value :{value}</div>
         </Field>
+        <button type="button" on:click={toggleRule}>toggle rule</button>
       </div>
       <div>
         <Field
@@ -167,18 +179,13 @@
     </form>
   </div>
   <div class="column">
-    <form
-      name="form-b"
-      on:submit={formB$.handleSubmit(console.log, console.log)}>
+    <form name="form-b" on:submit={formB$.onSubmit(console.log, console.log)}>
       {#if editable}
         <div
           use:formB$.field={{ defaultValue: '', rules: ['required', asyncValidation] }}>
           <input name="description" type="text" />
         </div>
-        <input
-          type="text"
-          value={$customField$.value}
-          on:input={(e) => formB$.setValue('custom_field', e.target.value)} />
+        <input type="text" value={$customField$.value} on:input={onInput} />
         {JSON.stringify($customField$)}
       {:else}
         <!-- <input

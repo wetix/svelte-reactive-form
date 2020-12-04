@@ -12,3 +12,5 @@ types
 /rules
 yarn-error.log
 *.d.ts
+!src/components/*.d.ts
+!index.d.ts

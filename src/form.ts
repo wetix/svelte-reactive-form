@@ -1,5 +1,5 @@
 import { writable, get, readable } from "svelte/store";
-import type { Writable } from "svelte/store";
+import type { Readable } from "svelte/store";
 
 import { resolveRule } from "./rule";
 import toPromise from "./to_promise";
@@ -8,7 +8,6 @@ import type {
   FieldState,
   FieldOption,
   ValidationRule,
-  FormOption,
   SuccessCallback,
   FormState,
   ValidationResult,
@@ -19,6 +18,7 @@ import type {
   NodeElement,
   RegisterOption,
   ErrorCallback,
+  FieldStateStore,
 } from "./types";
 
 const defaultFormState = {
@@ -113,15 +113,9 @@ const _strToValidator = (rule: string): ValidationRule => {
   };
 };
 
-export const useForm = (
-  config: Config = {},
-  opts: FormOption = { validateOnChange: false }
-): Form => {
+export const useForm = (config: Config = { validateOnChange: true }): Form => {
   // cache for form fields
-  const cache: Map<
-    string,
-    [Writable<FieldState>, ValidationRule[]]
-  > = new Map();
+  const cache: Map<string, [FieldStateStore, ValidationRule[]]> = new Map();
 
   // global state for form
   const form$ = writable<FormState>(Object.assign({}, defaultFormState));
@@ -129,14 +123,46 @@ export const useForm = (
   // errors should be private variable
   const errors$ = writable<Record<string, any>>({});
 
-  const register = <T>(path: string, option: RegisterOption<T> = {}) => {
-    const value = option.defaultValue || "";
-    const store$ = writable<FieldState>(
-      Object.assign({}, defaultFieldState, {
-        defaultValue: value,
-        value,
-      })
+  const _useLocalStore = (path: string, state: object) => {
+    const { subscribe, set, update } = writable<FieldState>(
+      Object.assign({}, defaultFieldState, state)
     );
+
+    let unsubscribe;
+    return {
+      set,
+      update,
+      destroy() {
+        unsubscribe && unsubscribe();
+      },
+      subscribe(
+        run: (value: FieldState) => void,
+        invalidate?: (value?: FieldState) => void
+      ) {
+        unsubscribe = subscribe(run, invalidate);
+        return () => {
+          // prevent memory leak
+          unsubscribe();
+          cache.delete(path); // clean our cache
+        };
+      },
+    };
+  };
+
+  const _setStore = (path: string, state: object = {}) => {
+    const store$ = _useLocalStore(path, state);
+    cache.set(path, [store$, []]);
+  };
+
+  const register = <T>(
+    path: string,
+    option: RegisterOption<T> = {}
+  ): Readable<FieldState> => {
+    const value = option.defaultValue || "";
+    const store$ = _useLocalStore(path, {
+      defaultValue: value,
+      value,
+    });
 
     let ruleExprs: ValidationRule[] = [];
     const { rules = [] } = option;
@@ -186,65 +212,41 @@ export const useForm = (
     cache.set(path, [store$, ruleExprs]);
 
     return {
-      subscribe(
-        run: (value: FieldState) => void,
-        invalidate?: (value?: FieldState) => void
-      ) {
-        const unsubscribe = store$.subscribe(run, invalidate);
-        return () => {
-          // prevent memory leak
-          unsubscribe();
-          cache.delete(path); // clean our cache
-        };
-      },
+      subscribe: store$.subscribe,
     };
   };
 
   const unregister = (path: string) => {
     if (cache.has(path)) {
-      // TODO: clear subscribe pipe
+      // clear subscriptions
+      cache.get(path)[0].destroy();
       cache.delete(path);
     }
   };
 
-  const setValue = <T>(path: string, value: T) => {
+  const setValue = <T>(path: string, value: T): void => {
     if (cache.has(path)) {
       const [store$, validators] = cache.get(path);
-      if (opts.validateOnChange && validators.length > 0) {
-        form$.update((v) => Object.assign(v, { pending: true, valid: false }));
-        const promises: Promise<ValidationResult>[] = [];
-        store$.update((v: FieldState) =>
-          Object.assign(v, { errors: [], dirty: true, pending: true, value })
-        );
-        for (let i = 0, len = validators.length; i < len; i++) {
-          const { validate, params } = validators[i];
-          promises.push(validate(value, params));
-        }
-        Promise.all(promises).then((result: ValidationResult[]) => {
-          const errors = <string[]>(
-            result.filter((v: ValidationResult) => v !== true)
-          );
-          const valid = errors.length === 0;
-          store$.update((v: FieldState) =>
-            Object.assign(v, { pending: false, errors, valid })
-          );
-          setError(path, errors);
-        });
+      if (config.validateOnChange && validators.length > 0) {
+        _validate(path, value);
       } else {
         store$.update((v) => Object.assign(v, { dirty: true, value }));
       }
     } else {
-      // FIXME: prevent memory leak
-      cache.set(path, [
-        writable<FieldState>(Object.assign({}, defaultFieldState)),
-        [],
-      ]);
+      _setStore(path);
     }
   };
 
-  const setError = (path: string, values: string[]) => {
+  const setError = (path: string, errors: string[]): void => {
+    if (cache.has(path)) {
+      const [store$] = cache.get(path);
+      store$.update((v: FieldState) => Object.assign(v, { errors }));
+    } else {
+      _setStore(path, { errors });
+    }
+    // update field errors
     errors$.update((v) => {
-      if (values.length === 0) {
+      if (errors.length === 0) {
         if (v[path]) delete v[path];
         if (Object.keys(v).length === 0)
           form$.update((v) => Object.assign(v, { valid: true }));
@@ -252,7 +254,7 @@ export const useForm = (
       }
 
       form$.update((v) => Object.assign(v, { valid: false }));
-      return Object.assign(v, { [path]: values });
+      return Object.assign(v, { [path]: errors });
     });
   };
 
@@ -313,7 +315,7 @@ export const useForm = (
     };
 
     _attachEvent("blur", onBlur, { once: true });
-    if (opts.validateOnChange) {
+    if (config.validateOnChange) {
       _attachEvent("input", onChange);
       _attachEvent("change", onChange);
     }
@@ -333,117 +335,6 @@ export const useForm = (
       },
     };
   };
-
-  const useField = (node: NodeElement, option: FieldOption = {}) => {
-    let field = _useField(node, option);
-
-    return {
-      update(newOption: FieldOption = {}) {
-        field.destroy();
-        field = _useField(node, newOption);
-      },
-      destroy() {
-        field.destroy();
-      },
-    };
-  };
-
-  const handleSubmit = (
-    successCallback: SuccessCallback,
-    errorCallback?: ErrorCallback
-  ) => async (e: Event) => {
-    form$.update((v) => Object.assign(v, { submitting: true }));
-    e.preventDefault();
-    e.stopPropagation();
-    let data = {},
-      // TODO: errors
-      // errors = [],
-      valid = true;
-    const { elements = [] } = <HTMLFormElement>e.currentTarget;
-    for (let i = 0, len = elements.length; i < len; i++) {
-      const name = elements[i].name || elements[i].id;
-      let value = elements[i].value || "";
-      if (!name) continue;
-      // TODO: shouldn't only loop elements, should check cache keys which not exists in elements as well
-      if (cache.has(name)) {
-        // TODO: check checkbox and radio
-        const { nodeName, type } = elements[i];
-        switch (type) {
-          case "checkbox":
-            value = elements[i].checked ? value : "";
-            break;
-        }
-
-        const result = await _validate(name, value);
-        valid = valid && result.valid; // update valid
-      }
-
-      data = _normalizeObject(data, name, value);
-    }
-
-    if (valid) {
-      await toPromise<void>(successCallback)(data, e);
-    } else {
-      errorCallback && errorCallback(get(errors$), e);
-    }
-
-    // submitting should end only after execute user callback
-    form$.update((v) => Object.assign(v, { submitting: false }));
-  };
-
-  const _validate = (name: string, value: any): Promise<any> => {
-    const promises: Promise<ValidationResult>[] = [];
-    const [store$, validators] = cache.get(name);
-    // const state$ = get(store$);
-    // if (!state$.dirty) {
-    //   return Promise.resolve();
-    // }
-    store$.update((v: FieldState) =>
-      Object.assign(v, { errors: [], dirty: true, pending: true, value })
-    );
-    for (let i = 0, len = validators.length; i < len; i++) {
-      const { validate, params } = validators[i];
-      promises.push(validate(value, params));
-    }
-    return Promise.all(promises)
-      .then((result: ValidationResult[]) => {
-        const errors = <string[]>(
-          result.filter((v: ValidationResult) => v !== true)
-        );
-        const valid = errors.length === 0;
-        store$.update((v: FieldState) =>
-          Object.assign(v, { pending: false, valid, errors })
-        );
-        setError(name, errors);
-        return Promise.resolve({ valid, errors });
-      })
-      .catch(() => {
-        store$.update((v) => Object.assign(v, { pending: false }));
-      });
-  };
-
-  const validate = async (name?: string | string[]) =>
-    new Promise(async (resolve) => {
-      const fields = name || Array.from(cache.keys());
-      let value: any;
-      if (Array.isArray(fields)) {
-        const data = {};
-        for (let i = 0; i < fields.length; i += 1) {
-          value = getValue(fields[i]);
-          data[fields[i]] = value;
-          if (value !== null) {
-            await _validate(fields[i], value);
-          }
-        }
-
-        return resolve({ data, errors: get(errors$) });
-      }
-      value = getValue(fields);
-      if (value !== null) {
-        await _validate(fields, value);
-      }
-      return resolve({ data: { [fields]: value }, errors: get(errors$) });
-    });
 
   const reset = (values: Fields, option?: ResetFormOption) => {
     const defaultOption = {
@@ -465,6 +356,118 @@ export const useForm = (
         });
       });
     }
+  };
+
+  const useField = (node: NodeElement, option: FieldOption = {}) => {
+    let field = _useField(node, option);
+
+    return {
+      update(newOption: FieldOption = {}) {
+        field.destroy();
+        field = _useField(node, newOption);
+      },
+      destroy() {
+        field.destroy();
+      },
+    };
+  };
+
+  const onSubmit = (
+    successCallback: SuccessCallback,
+    errorCallback?: ErrorCallback
+  ) => async (e: Event) => {
+    form$.update((v) => Object.assign(v, { submitting: true }));
+    e.preventDefault();
+    e.stopPropagation();
+    errors$.set({}); // reset errors
+    let data = {},
+      valid = true;
+    const { elements = [] } = <HTMLFormElement>e.currentTarget;
+    for (let i = 0, len = elements.length; i < len; i++) {
+      const name = elements[i].name || elements[i].id;
+      let value = elements[i].value || "";
+      if (!name) continue;
+      if (config.resolver) {
+        data = _normalizeObject(data, name, value);
+        continue;
+      }
+      // TODO: shouldn't only loop elements, should check cache keys which not exists in elements as well
+      if (cache.has(name)) {
+        const store = cache.get(name);
+        // TODO: check checkbox and radio
+        const { nodeName, type } = elements[i];
+        switch (type) {
+          case "checkbox":
+            value = elements[i].checked ? value : "";
+            break;
+        }
+
+        const result = await _validate(name, value);
+        valid = valid && result.valid; // update valid
+      }
+    }
+
+    if (config.resolver) {
+      try {
+        await config.resolver.validate(data);
+      } catch (e) {
+        valid = false;
+        errors$.set(<Record<string, any>>e);
+      }
+    }
+
+    if (valid) {
+      await toPromise<void>(successCallback)(data, e);
+    } else {
+      errorCallback && errorCallback(get(errors$), e);
+    }
+
+    // submitting should end only after execute user callback
+    form$.update((v) => Object.assign(v, { valid, submitting: false }));
+  };
+
+  const _validate = (path: string, value: any): Promise<FieldState> => {
+    const promises: Promise<ValidationResult>[] = [];
+    if (cache.has(path)) {
+      const [store$, validators] = cache.get(path);
+      let state = get(store$);
+
+      if (validators.length === 0) {
+        state = Object.assign(state, { errors: [], valid: true });
+        store$.set(state);
+        return Promise.resolve(state);
+      }
+      form$.update((v) => Object.assign(v, { pending: true, valid: false }));
+      store$.update((v: FieldState) =>
+        Object.assign(v, { errors: [], dirty: true, pending: true, value })
+      );
+
+      for (let i = 0, len = validators.length; i < len; i++) {
+        const { validate, params } = validators[i];
+        promises.push(validate(value, params));
+      }
+
+      return Promise.all(promises).then((result: ValidationResult[]) => {
+        const errors = <string[]>(
+          result.filter((v: ValidationResult) => v !== true)
+        );
+        const valid = errors.length === 0;
+        store$.update((v: FieldState) =>
+          Object.assign(v, { pending: false, errors, valid })
+        );
+        setError(path, errors);
+        return get(store$);
+      });
+    }
+  };
+
+  const validate = () => {
+    const promises: Promise<FieldState>[] = [];
+    for (const [path, [store$]] of cache.entries()) {
+      const state = get(store$);
+      promises.push(_validate(path, state.value));
+    }
+    return Promise.all(promises);
   };
 
   return {
@@ -501,7 +504,7 @@ export const useForm = (
     getValue,
     setError,
     setTouched,
-    handleSubmit,
+    onSubmit,
     reset,
     validate,
   };
