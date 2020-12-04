@@ -60,6 +60,20 @@
     console.log(formB$.getValue("custom_field"));
     formB$.setValue("custom_field", (<HTMLInputElement>e.target).value);
   };
+
+  const array$ = register("array", {
+    defaultValue: [1, 2, 3, 4, 5],
+    rules: ["required"],
+  });
+  const onEnterInput = (e: Event) => {
+    const v = (<HTMLInputElement>e.target).value;
+    form$.setValue("array", v.split(",").filter(Boolean));
+    console.log($array$.value);
+  };
+
+  const onValidate = () => {
+    form$.validate(["array", "name"]).then(console.log);
+  };
 </script>
 
 <style>
@@ -83,6 +97,14 @@
 <section class="row">
   <div class="column">
     <form on:submit={onSubmit(successCb)}>
+      <div>
+        <input
+          type="text"
+          value={$array$.defaultValue}
+          on:input={onEnterInput} />
+        <button type="button" on:click={onValidate}>validate</button>
+      </div>
+      {JSON.stringify($array$)}
       <div>
         <Field
           {control}

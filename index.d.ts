@@ -1,8 +1,11 @@
-import type { SvelteComponent } from "svelte/internal";
+import type { SvelteComponentTyped } from "svelte";
 import type { Readable } from "svelte/store";
-import type { FormControl, RuleExpression } from "./types";
 
-export interface FieldProps {
+import type { FormControl, RuleExpression } from "./types";
+import { useForm } from "./form";
+import { defineRule } from "./rule";
+
+interface FieldProps {
   name: string;
   control: Readable<FormControl>;
   defaultValue?: any;
@@ -10,8 +13,8 @@ export interface FieldProps {
   type?: "hidden" | "text";
 }
 
-declare class Field extends SvelteComponent<FieldProps> {}
+declare module "svelte-reactive-form" {
+  export declare class Field extends SvelteComponentTyped<FieldProps, {}, {}> {}
+}
 
-import { useForm } from "./form";
-import { defineRule } from "./rule";
 export { Field, useForm, defineRule };

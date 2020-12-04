@@ -476,9 +476,9 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
       _normalizeObject(data, paths[i], state.value);
     }
 
-    return Promise.all(promises).then((v: FieldState[]) => {
+    return Promise.all(promises).then((result: FieldState[]) => {
       return {
-        valid: v.every((v) => v.valid),
+        valid: result.every((state) => state.valid),
         data,
       };
     });
