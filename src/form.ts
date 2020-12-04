@@ -134,6 +134,7 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
       update,
       destroy() {
         unsubscribe && unsubscribe();
+        cache.delete(path); // clean our cache
       },
       subscribe(
         run: (value: FieldState) => void,
@@ -143,7 +144,6 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
         return () => {
           // prevent memory leak
           unsubscribe();
-          cache.delete(path); // clean our cache
         };
       },
     };
@@ -218,9 +218,11 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
 
   const unregister = (path: string) => {
     if (cache.has(path)) {
-      // clear subscriptions
+      // clear subscriptions and cache
       cache.get(path)[0].destroy();
-      cache.delete(path);
+      setTimeout(() => {
+        cache.delete(path);
+      }, 0);
     }
   };
 
@@ -461,13 +463,25 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
     }
   };
 
-  const validate = () => {
+  const validate = (paths: string | string[] = Array.from(cache.keys())) => {
+    if (!Array.isArray(paths)) paths = [paths];
     const promises: Promise<FieldState>[] = [];
-    for (const [path, [store$]] of cache.entries()) {
+
+    let data = {};
+    for (let i = 0, len = paths.length; i < len; i++) {
+      if (!cache.has(paths[i])) continue;
+      const [store$] = cache.get(paths[i]);
       const state = get(store$);
-      promises.push(_validate(path, state.value));
+      promises.push(_validate(paths[i], state.value));
+      _normalizeObject(data, paths[i], state.value);
     }
-    return Promise.all(promises);
+
+    return Promise.all(promises).then((v: FieldState[]) => {
+      return {
+        valid: v.every((v) => v.valid),
+        data,
+      };
+    });
   };
 
   return {

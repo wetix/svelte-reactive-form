@@ -75,7 +75,9 @@ export interface Form extends Readable<FormState>, FormControl {
   control: Readable<FormControl>;
   field: UseField;
   errors: FieldErrors;
-  validate: any;
+  validate: (
+    paths?: string | Array<string>
+  ) => Promise<{ valid: boolean; data: object }>;
   onSubmit: (
     success: SuccessCallback,
     error?: ErrorCallback

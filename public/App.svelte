@@ -57,6 +57,7 @@
   let rules = [required, asyncValidation, "minLength:6"];
 
   const onInput = (e: Event) => {
+    console.log(formB$.getValue("custom_field"));
     formB$.setValue("custom_field", (<HTMLInputElement>e.target).value);
   };
 </script>
@@ -187,6 +188,9 @@
         </div>
         <input type="text" value={$customField$.value} on:input={onInput} />
         {JSON.stringify($customField$)}
+        <button
+          type="button"
+          on:click={() => formB$.validate().then(console.log)}>validate</button>
       {:else}
         <!-- <input
           id="checkbox"
