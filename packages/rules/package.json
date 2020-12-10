@@ -30,7 +30,6 @@
   },
   "scripts": {
     "build": "rollup -c",
-    "prepublishOnly": "npm run tsd && npm run build",
     "tsd": "tsc ./src/*.ts --declaration --emitDeclarationOnly --outDir types"
   },
   "bugs": {
