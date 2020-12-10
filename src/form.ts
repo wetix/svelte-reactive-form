@@ -144,6 +144,7 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
         return () => {
           // prevent memory leak
           unsubscribe();
+          unsubscribe = null;
         };
       },
     };
@@ -220,9 +221,6 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
     if (cache.has(path)) {
       // clear subscriptions and cache
       cache.get(path)[0].destroy();
-      setTimeout(() => {
-        cache.delete(path);
-      }, 0);
     }
   };
 

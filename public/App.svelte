@@ -3,6 +3,8 @@
   import { required, minLength } from "../src/rules";
   import Component from "./Component.svelte";
   import DynamicField from "./DynamicField.svelte";
+  import Component2 from "./FormA.svelte";
+  import Component3 from "./FormB.svelte";
   import Form from "./Form.svelte";
   import UserInformation from "./UserInformation.svelte";
 
@@ -11,6 +13,14 @@
   defineRule("phoneNo", (val: any) => {
     return /[0-9]+/.test(val) || "invalid phone number format";
   });
+
+  let step = 0;
+
+  const components = [Component2, Component3];
+
+  const goNext = () => {
+    step += 1;
+  };
 
   const form$ = useForm({ validateOnChange: true });
   const { register, setValue, validate, control, onSubmit } = form$;
@@ -95,6 +105,8 @@
 </style>
 
 <section class="row">
+  <svelte:component this={components[step]} />
+  <button type="button" on:click={() => goNext()}> Next </button>
   <div class="column">
     <form on:submit={onSubmit(successCb)}>
       <div>

@@ -1,6 +1,6 @@
 {
   "name": "svelte-reactive-form",
-  "version": "0.6.3-beta",
+  "version": "0.6.4-beta",
   "description": "",
   "author": "si3nloong <sianloong90@gmail.com>",
   "homepage": "",
@@ -8,7 +8,11 @@
   "main": "index.js",
   "browser": "index.js",
   "module": "index.js",
-  "svelte": "index.js",
+  "svelte": "src/index.ts",
+  "exports": {
+    "require": "./index.cjs",
+    "import": "./index.js"
+  },
   "types": "index.d.ts",
   "repository": "https://github.com/wetix/svelte-reactive-form",
   "keywords": [
@@ -44,20 +48,21 @@
     "babel-jest": "^26.6.3",
     "jest": "^26.6.3",
     "jest-transform-svelte": "^2.1.1",
-    "rollup": "^2.34.1",
+    "lerna": "^3.22.1",
+    "rollup": "^2.34.2",
     "rollup-plugin-bundle-size": "^1.0.3",
     "rollup-plugin-css-only": "^3.0.0",
     "rollup-plugin-livereload": "^2.0.0",
     "rollup-plugin-svelte": "^7.0.0",
     "rollup-plugin-terser": "^7.0.2",
-    "sirv-cli": "^1.0.8",
+    "sirv-cli": "^1.0.10",
     "svelte": "^3.31.0",
-    "svelte-check": "^1.1.19",
+    "svelte-check": "^1.1.20",
     "svelte-preprocess": "^4.6.1",
     "tslib": "^2.0.3",
     "typescript": "^4.1.2",
-    "uuid": "^8.3.1",
-    "yup": "^0.31.0"
+    "uuid": "^8.3.2",
+    "yup": "^0.32.6"
   },
   "peerDependencies": {
     "svelte": "^3.27.0"

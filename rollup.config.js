@@ -8,7 +8,10 @@ import size from "rollup-plugin-bundle-size";
 export default [
   {
     input: "src/index.ts",
-    output: [{ file: "index.js", format: "es" }],
+    output: [
+      { file: "index.cjs", format: "cjs" },
+      { file: "index.js", format: "es" },
+    ],
     plugins: [
       svelte({
         preprocess: sveltePreprocess(),
@@ -41,7 +44,10 @@ export default [
   },
   {
     input: "src/rules/index.ts",
-    output: [{ file: "rules/index.js", format: "es" }],
+    output: [
+      { file: "rules/index.cjs", format: "cjs" },
+      { file: "rules/index.js", format: "es" },
+    ],
     plugins: [
       svelte({
         preprocess: sveltePreprocess(),

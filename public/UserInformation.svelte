@@ -85,7 +85,7 @@
             User Information
             <a
               class="close"
-              href="#"
+              href={item.id}
               on:click|preventDefault={() => handleRemove(i)}>remove</a>
           </td>
         </tr>
