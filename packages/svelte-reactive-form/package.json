@@ -1,6 +1,6 @@
 {
   "name": "svelte-reactive-form",
-  "version": "0.7.0-beta",
+  "version": "0.7.0",
   "description": "A better version of form validation.",
   "author": "si3nloong <sianloong90@gmail.com>",
   "homepage": "https://github.com/wetix/svelte-reactive-form#readme",
@@ -35,6 +35,5 @@
   },
   "peerDependencies": {
     "svelte": "^3.31.0"
-  },
-  "gitHead": "068ee6ec127091afc717a2e20dbd4b3e4b067b06"
+  }
 }
