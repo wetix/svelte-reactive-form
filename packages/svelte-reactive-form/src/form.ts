@@ -143,7 +143,7 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
         unsubscribe = subscribe(run, invalidate);
         return () => {
           // prevent memory leak
-          unsubscribe();
+          unsubscribe && unsubscribe();
           unsubscribe = null;
         };
       },
@@ -169,14 +169,16 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
     const { rules = [] } = option;
     const typeOfRule = typeof rules;
     if (typeOfRule === "string") {
-      ruleExprs = (rules as string)
-        .split("|")
-        .map((v: string) => _strToValidator(v));
+      ruleExprs = ((rules as string).match(/[^\|]+/g) || []).map((v: string) =>
+        _strToValidator(v)
+      );
     } else if (Array.isArray(rules)) {
       ruleExprs = rules.reduce((acc: ValidationRule[], rule: any) => {
         const typeOfVal = typeof rule;
+        if (!rule) return acc; // skip null, undefined etc
         if (typeOfVal === "string") {
-          acc.push(_strToValidator(<string>rule));
+          rule = <string>rule.trim();
+          rule && acc.push(_strToValidator(rule));
         } else if (typeOfVal === "function") {
           rule = rule as Function;
           if (rule.name === "")
@@ -404,6 +406,7 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
 
         const result = await _validate(name, value);
         valid = valid && result.valid; // update valid
+        data = _normalizeObject(data, name, value);
       }
     }
 

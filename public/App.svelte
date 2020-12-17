@@ -1,6 +1,10 @@
 <script lang="ts">
-  import { useForm, Field, defineRule } from "../src/index";
-  import { required, minLength } from "../src/rules";
+  import {
+    useForm,
+    Field,
+    defineRule,
+  } from "../packages/svelte-reactive-form/src";
+  import { required, minLength } from "../packages/rules/src";
   import Component from "./Component.svelte";
   import DynamicField from "./DynamicField.svelte";
   import Component2 from "./FormA.svelte";

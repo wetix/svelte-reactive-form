@@ -1,10 +1,15 @@
 <script lang="ts">
-  import { useForm } from "../src/index";
-  import type { FieldState } from "../src/types";
+  import Field from "../src/components/Field.svelte";
+  import { useForm } from "../packages/svelte-reactive-form/src";
+  import type { FieldState } from "../packages/svelte-reactive-form/src/types";
 
   const form$ = useForm({ validateOnChange: true });
   const { field, getValue } = form$;
 
+  const str = "searchterm1 asdasd";
+  console.log(str.match(/[^ ]+/g));
+  console.log("a|b|c".match(/[^\|]+/g));
+  console.log("a|bc|".match(/[^\|]+/g));
   let desc = "";
   const showDesc = () => {
     desc = getValue("desc");
@@ -22,6 +27,7 @@
 </style>
 
 <form>
+  <Field control={form$.control}><input type="text" /></Field>
   <div>
     <textarea name="desc" use:field={{ defaultValue: 'default text...' }} />
     <div>{desc}</div>

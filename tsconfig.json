@@ -5,11 +5,5 @@
     "types": ["jest", "node", "svelte"]
   },
   "extends": "@tsconfig/svelte/tsconfig.json",
-  "include": [
-    "src/**/*",
-    "index.d.ts",
-    "public/main.js",
-    "packages/rules/rules"
-  ],
   "exclude": ["node_modules/*", "__sapper__/*", "public/*"]
 }

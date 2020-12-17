@@ -1,17 +1,17 @@
 {
   "name": "@svelte-reactive-form/rules",
-  "version": "0.6.4-beta",
-  "description": "> TODO: description",
+  "version": "0.7.0-beta",
+  "description": "",
   "author": "si3nloong <sianloong90@gmail.com>",
   "homepage": "https://github.com/wetix/svelte-reactive-form#readme",
   "license": "MIT",
-  "main": "index.js",
-  "browser": "index.js",
-  "module": "index.mjs",
+  "main": "lib/index.cjs",
+  "browser": "lib/index.js",
+  "module": "lib/index.mjs",
   "svelte": "src/index.ts",
   "exports": {
-    "require": "./index.cjs",
-    "import": "./index.mjs"
+    "require": "./lib/index.cjs",
+    "import": "./lib/index.mjs"
   },
   "types": "types/index.d.ts",
   "directories": {

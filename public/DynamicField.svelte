@@ -1,6 +1,5 @@
 <script lang="ts">
-  import { useForm } from "../src/index";
-  import type { FieldState } from "../src/types";
+  import { useForm } from "../packages/svelte-reactive-form/src";
 
   let defaultValue = "";
   let name = "default";
@@ -14,7 +13,7 @@
   };
 
   const handleClick = () => {
-    form$.validate(name, value);
+    form$.validate(name);
   };
 
   const handleChange = (v) => {

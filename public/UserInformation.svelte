@@ -1,7 +1,7 @@
 <script lang="ts">
   import { v4 as uuidv4 } from "uuid";
   import * as yup from "yup";
-  import { useForm } from "../src/index";
+  import { useForm } from "../packages/svelte-reactive-form/src";
 
   let items = [];
 
