@@ -62,7 +62,7 @@
 ```svelte
 <script>
     import { useForm } from "svelte-reactive-form";
-    import { required } from "svelte-reactive-form/rules";
+    import { required } from "@svelte-reactive-form/rules";
 
     const { register } = useForm();
 

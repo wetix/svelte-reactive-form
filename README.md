@@ -41,7 +41,7 @@ How to use
 ```svelte
 <script lang="ts">
   import { useForm, Field, defineRule } from "svelte-reactive-form";
-  import { required, minLength } from "svelte-reactive-form/rules";
+  import { required, minLength } from "@svelte-reactive-form/rules";
 
   // define the global validation rules
   defineRule("required", required);
