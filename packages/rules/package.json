@@ -34,5 +34,6 @@
   },
   "bugs": {
     "url": "https://github.com/wetix/svelte-reactive-form/issues"
-  }
+  },
+  "gitHead": "068ee6ec127091afc717a2e20dbd4b3e4b067b06"
 }
