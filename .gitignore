@@ -4,6 +4,7 @@ node_modules
 .DS_Store
 lib
 package-lock.json
+lerna-debug.log
 yarn.lock
 types
 /index.cjs.js
