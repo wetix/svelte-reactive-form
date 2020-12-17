@@ -1,6 +1,6 @@
 {
   "name": "svelte-reactive-form",
-  "version": "0.7.3",
+  "version": "0.7.4",
   "description": "A better version of form validation.",
   "author": "si3nloong <sianloong90@gmail.com>",
   "homepage": "https://github.com/wetix/svelte-reactive-form#readme",
@@ -23,6 +23,8 @@
     "form"
   ],
   "files": [
+    "src/*",
+    "src/**/*.svelte",
     "index.cjs",
     "index.mjs",
     "types/*.d.ts"
