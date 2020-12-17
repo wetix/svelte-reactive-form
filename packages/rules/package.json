@@ -1,6 +1,6 @@
 {
   "name": "@svelte-reactive-form/rules",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "",
   "author": "si3nloong <sianloong90@gmail.com>",
   "homepage": "https://github.com/wetix/svelte-reactive-form#readme",
@@ -34,5 +34,6 @@
   },
   "bugs": {
     "url": "https://github.com/wetix/svelte-reactive-form/issues"
-  }
+  },
+  "gitHead": "13f0f8dadcd537eb7d68c7a559c86336a8ed9c41"
 }
