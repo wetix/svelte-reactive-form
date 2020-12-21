@@ -6,12 +6,10 @@ lib
 package-lock.json
 lerna-debug.log
 yarn.lock
-types
 /index.cjs.js
 /index.esm.js
 /index.js
 /rules
 yarn-error.log
-*.d.ts
 !src/components/*.d.ts
-!index.d.ts
+# !index.d.ts
