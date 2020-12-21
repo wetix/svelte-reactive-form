@@ -13,7 +13,7 @@
     "require": "./lib/index.cjs",
     "import": "./lib/index.mjs"
   },
-  "types": "types/types.d.ts",
+  "types": "types/index.d.ts",
   "repository": "https://github.com/wetix/svelte-reactive-form",
   "keywords": [
     "SvelteJS",
