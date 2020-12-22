@@ -1,8 +1,8 @@
 import type { SvelteComponentTyped } from "svelte";
 import type { Readable } from "svelte/store";
-import type { useForm } from "./form";
+import { useForm } from "./form";
 import type { RuleExpression, FormControl } from "./types";
-import type { defineRule, resolveRule } from "./rule";
+import { defineRule, resolveRule } from "./rule";
 
 type FieldProps = {
   name: string;
