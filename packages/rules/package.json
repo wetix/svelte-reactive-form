@@ -1,6 +1,6 @@
 {
   "name": "@svelte-reactive-form/rules",
-  "version": "0.7.9",
+  "version": "0.7.10",
   "description": "",
   "author": "si3nloong <sianloong90@gmail.com>",
   "homepage": "https://github.com/wetix/svelte-reactive-form#readme",
@@ -19,6 +19,7 @@
     "test": "__tests__"
   },
   "files": [
+    "package.json",
     "src/*",
     "index.cjs",
     "index.mjs",
