@@ -13,7 +13,16 @@ type FieldProps = {
 };
 
 type FieldSlot = {
-  default: {};
+  default: {
+    pending: boolean;
+    valid: boolean;
+    errors: string[];
+    dirty: boolean;
+    touched: boolean;
+    value: any;
+    onChange: void;
+    onBlur: void;
+  };
 };
 
 declare class Field extends SvelteComponentTyped<FieldProps, {}, FieldSlot> {}
