@@ -1,7 +1,6 @@
-
 # Svelte Reactive Form
 
-> A better version of form validation for [Svelte](https://svelte.dev). 
+> A better version of form validation for [Svelte](https://svelte.dev).
 
 <p>
 
@@ -13,29 +12,29 @@
 
 </p>
 
-
-Installation and Usage
---------------------------
+## Installation and Usage
 
 ```bash
 npm install svelte-reactive-form
 ```
+
 or
+
 ```bash
 yarn add svelte-reactive-form
 ```
 
-Features
---------------------------
+## Features
+
 - Simple
 - No extra dependency
 - TypeScript as first class citizen
 - Custom validation
-- Reactive 
+- Reactive
 - Flexible & Configurable
 
-How to use
---------------------------
+## How to use
+
 [https://svelte.dev/repl/2afb74650f36429fa15871b6998d60c9?version=3.30.0](https://svelte.dev/repl/2afb74650f36429fa15871b6998d60c9?version=3.30.0)
 
 ```svelte
@@ -52,20 +51,24 @@ How to use
 
   // initialize the form instance
   const form$ = useForm();
-  const { field, register, setValue, control, handleSubmit } = form$;
+  const { field, register, setValue, control, onSubmit } = form$;
 
   // you can register your field manually
-  register("pin", { 
-    defaultValue: "", 
+  register("pin", {
+    defaultValue: "",
     rules: ["required", "minLength:4", "numeric"]
   });
 
   const successCallback = (v) => {
-    console.log(v)
+    console.log(v);
+  }
+
+  const failedCallback = (v) => {
+    console.log(v);
   }
 </script>
 
-<form on:submit={handleSubmit(successCallback)}>
+<form on:submit={onSubmit(successCallback, failedCallback)}>
   <Field {control} name="name" rules="required" let:errors let:onChange>
     <Component {onChange} />
     {#each errors as item}
@@ -82,30 +85,25 @@ How to use
 </form>
 ```
 
-API
---------------------------
+## API
+
 Check out the [API](https://github.com/wetix/svelte-reactive-form/blob/master/docs/API.md) documentation.
 
 For advanced usage, you may refer to [Advanced API](https://github.com/wetix/svelte-reactive-form/blob/master/docs/ADVANCED_USAGE.md).
 
-Sponsors
---------------------------
+## Sponsors
 
 <img src="https://asset.wetix.my/images/logo/wetix.png" alt="WeTix" width="240px">
 
+## License
 
-License
---------------------------
-[svelve-reactive-form](https://github.com/wetix/svelte-reactive-form) is 100% free and open-source, under the [MIT license](https://github.com/wetix/svelte-reactive-form/blob/master/LICENSE). 
+[svelve-reactive-form](https://github.com/wetix/svelte-reactive-form) is 100% free and open-source, under the [MIT license](https://github.com/wetix/svelte-reactive-form/blob/master/LICENSE).
 
+## Big Thanks To
 
-Big Thanks To
---------------------------
 Thanks to these awesome companies for their support of Open Source developers ❤
 
 [![GitHub](https://jstools.dev/img/badges/github.svg)](https://github.com/open-source)
 [![NPM](https://jstools.dev/img/badges/npm.svg)](https://www.npmjs.com/)
 
 Inspired by [react-hook-form](https://react-hook-form.com/).
-
-
