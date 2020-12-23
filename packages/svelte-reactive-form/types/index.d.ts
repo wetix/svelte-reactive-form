@@ -6,10 +6,10 @@ import { defineRule, resolveRule } from "./rule";
 
 type FieldProps = {
   name: string;
-  defaultValue: any;
   control: Readable<FormControl>;
-  rules: RuleExpression;
-  type: "hidden" | "text";
+  defaultValue?: any;
+  rules?: RuleExpression;
+  type?: "hidden" | "text";
 };
 
 type FieldSlot = {
