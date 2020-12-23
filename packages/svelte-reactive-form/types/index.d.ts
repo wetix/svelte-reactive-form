@@ -20,8 +20,11 @@ type FieldSlot = {
     dirty: boolean;
     touched: boolean;
     value: any;
-    onChange: void;
-    onBlur: void;
+    onChange:
+      | ((e: Event) => void)
+      | ((e: CustomEvent) => void)
+      | ((e: any) => void);
+    onBlur: ((v: any) => void) | void;
   };
 };
 
