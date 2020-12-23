@@ -1,4 +1,5 @@
 # useForm
+
 - [useForm](#useform)
   - [form object](#form-object)
   - [control](#control)
@@ -9,7 +10,8 @@
   - [errors](#errors)
 
 ## form object
-> Form object is a reactive object, is contains 
+
+> Form object is a reactive object, is contains
 
 | Property     | Description            | Data Type | Default Value |
 | ------------ | ---------------------- | --------- | ------------- |
@@ -34,19 +36,22 @@
 <div>Form pending : {$form.pending}</div>
 <div>Form submitting : {$form.submitting}</div>
 ```
+
 <br />
 
 ## control
+
 > The form context.
 
-| Property     | Description            | Data Type          |
-| ------------ | ---------------------- | ------------------ |
-| `register`   | check all fields valid | `() => FieldState` |
-| `unregister` | form is validating     | `() => void`       |
+| Property     | Description                   | Data Type          |
+| ------------ | ----------------------------- | ------------------ |
+| `register`   | register your field with name | `() => FieldState` |
+| `unregister` | unregister your field         | `() => void`       |
 
 <br />
 
 ## register
+
 > Register field with defaultValue, rules etc. It will return a reactive state.
 
 | Property       | Description                               | Data Type  |
@@ -103,6 +108,7 @@
 <br />
 
 ## setValue
+
 > setValue will execute validation if `validateOnChange` is `true`.
 
 ```svelte
@@ -118,7 +124,9 @@
 <br />
 
 ## setTouched
+
 > Set field touched
+
 ```svelte
 <script>
     import { useForm } from "svelte-reactive-form";
@@ -133,13 +141,15 @@
 <br />
 
 ## setError
+
 > Set field error
+
 ```svelte
 <script>
     import { useForm } from "svelte-reactive-form";
 
     const { errors } = useForm();
-    
+
     setTimeout(() => {
         setError("name", ["invalid name format"]);
     })
@@ -151,3 +161,22 @@
 <br />
 
 ## errors
+
+> Errors is a reactive object, make sure you pair it with magic syntax of svelte `$`, or else you may alway listen to it using `subscribe`
+
+```svelte
+<script>
+    import { useForm } from "svelte-reactive-form";
+
+    const { errors } = useForm();
+
+    errors.subscribe((errs) => {
+        console.log("Errors =>", errs);
+    })
+    setTimeout(() => {
+        setError("name", ["invalid name format"]);
+    })
+</script>
+
+{@debug $errors}
+```
