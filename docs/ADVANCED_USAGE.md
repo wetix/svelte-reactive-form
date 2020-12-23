@@ -1,6 +1,7 @@
 # Advance Usage
 
 ### Validation Behavior
+
 By default `svelte-reactive-form` runs validation in these scenarios:
 
 1. After field value change
@@ -129,4 +130,81 @@ When the form has been submitted with either handleSubmit or submitForm.
     </div>
   </form>
 </div>
+```
+
+### Integrate with `rollup-plugin-svelte`
+
+You will hit error when you integrate with `rollup-plugin-svelte`, this is because `rollup-plugin-svelte` will read the `svelte` field in `package.json`, and the exported file is basically `ts` file, so it need to go thru some special compilation in order to use. To overcome this issue, make sure you whitelist `svelte-reactive-form` in `tsconfig.json`.
+
+**rollup.config.js**
+
+```js
+import svelte from "rollup-plugin-svelte";
+import commonjs from "@rollup/plugin-commonjs";
+import resolve from "@rollup/plugin-node-resolve";
+import livereload from "rollup-plugin-livereload";
+import { terser } from "rollup-plugin-terser";
+import sveltePreprocess from "svelte-preprocess";
+import typescript from "@rollup/plugin-typescript";
+import css from "rollup-plugin-css-only";
+
+const production = !process.env.ROLLUP_WATCH;
+
+export default {
+  input: "src/main.ts",
+  output: {
+    sourcemap: true,
+    format: "iife",
+    name: "app",
+    file: "public/build/bundle.js",
+  },
+  plugins: [
+    svelte({
+      extensions: [".svelte"],
+      preprocess: sveltePreprocess(),
+      compilerOptions: {
+        // enable run-time checks when not in production
+        dev: !production,
+      },
+    }),
+    // we'll extract any component CSS out into
+    // a separate file - better for performance
+    css({ output: "bundle.css" }),
+
+    // If you have external dependencies installed from
+    // npm, you'll most likely need these plugins. In
+    // some cases you'll need additional configuration -
+    // consult the documentation for details:
+    // https://github.com/rollup/plugins/tree/master/packages/commonjs
+    commonjs(),
+
+    resolve({
+      browser: true,
+      dedupe: ["svelte"],
+    }),
+
+    // this will help us to compile typescript files
+    typescript({
+      sourceMap: !production,
+      inlineSources: !production,
+    }),
+  ],
+};
+```
+
+**tsconfig.json**
+
+```json
+{
+  "compilerOptions": {
+    "types": ["svelte"]
+  },
+  "extends": "@tsconfig/svelte/tsconfig.json",
+  "include": [
+    "src/**/*",
+    "node_modules/svelte-reactive-form/**/*", // this is for the fix
+    "node_modules/@svelte-reactive-form/rules/**/*" // this is for the fix
+  ],
+  "exclude": ["__sapper__/*", "public/*"]
+}
 ```
