@@ -35,7 +35,7 @@ yarn add svelte-reactive-form
 
 ## How to use
 
-[https://svelte.dev/repl/2afb74650f36429fa15871b6998d60c9?version=3.30.0](https://svelte.dev/repl/2afb74650f36429fa15871b6998d60c9?version=3.30.0)
+[https://svelte.dev/repl/2afb74650f36429fa15871b6998d60c9?version=3.31.0](https://svelte.dev/repl/2afb74650f36429fa15871b6998d60c9?version=3.30.0)
 
 ```svelte
 <script lang="ts">
