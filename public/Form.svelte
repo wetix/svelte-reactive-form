@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Field from "../src/components/Field.svelte";
+  import Field from "../packages/svelte-reactive-form/src/components/Field.svelte";
   import { useForm } from "../packages/svelte-reactive-form/src";
   import type { FieldState } from "../packages/svelte-reactive-form/src/types";
 
@@ -22,18 +22,14 @@
   };
 </script>
 
-<style>
-  /* your styles go here */
-</style>
-
 <form>
   <Field control={form$.control}><input type="text" /></Field>
   <div>
-    <textarea name="desc" use:field={{ defaultValue: 'default text...' }} />
+    <textarea name="desc" use:field={{ defaultValue: "default text..." }} />
     <div>{desc}</div>
     <button type="button" on:click={showDesc}>get value</button>
   </div>
-  <section use:field={{ defaultValue: 'a', handleChange }}>
+  <section use:field={{ defaultValue: "a", handleChange }}>
     <div>
       <select name="options">
         <option value="a">A</option>
@@ -57,3 +53,7 @@
     </button>
   </div>
 </form>
+
+<style>
+  /* your styles go here */
+</style>

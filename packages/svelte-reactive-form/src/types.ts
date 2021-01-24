@@ -48,7 +48,7 @@ export type RegisterOption<T> = {
 export type FieldOption = {
   rules?: RuleExpression;
   defaultValue?: any;
-  handleChange?: (state: FieldState, node: HTMLElement) => void;
+  handleChange?: (state: FieldState, node: Element) => void;
 };
 
 export interface FormControl {
@@ -59,6 +59,7 @@ export interface FormControl {
   unregister: (path: string) => void;
   setValue: (path: string, value: any) => void;
   getValue: (path: string) => any;
+  getValues: () => Record<string, any>;
   setError: (path: string, values: string[]) => void;
   setTouched: (path: string, state: boolean) => void;
   reset: (values?: Fields) => void;
@@ -116,3 +117,5 @@ export type ResetFormOption = {
   errors: boolean;
   dirtyFields: boolean;
 };
+
+export type Field = [FieldStateStore, ValidationRule[]];

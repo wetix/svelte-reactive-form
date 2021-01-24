@@ -21,9 +21,9 @@ type FieldSlot = {
     touched: boolean;
     value: any;
     onChange:
-      | ((e: Event) => void)
-      | ((e: CustomEvent) => void)
-      | ((e: any) => void);
+      | ((e: Event) => void | {})
+      | ((e: CustomEvent) => void | {})
+      | ((e: any) => void | {});
     onBlur: ((v: any) => void) | void;
   };
 };

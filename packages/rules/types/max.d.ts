@@ -1,1 +1,1 @@
-export declare const max: (v: any, length: string[]) => boolean | string;
+export declare const max: (v: any, [len]: [string]) => boolean | string;

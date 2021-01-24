@@ -2,7 +2,7 @@
   "name": "svelte-reactive-form",
   "version": "0.7.14",
   "description": "A better version of form validation.",
-  "author": "si3nloong <sianloong90@gmail.com>",
+  "author": "si3nloong <sianloong90@gmail.com> (https://github.com/si3nloong)",
   "homepage": "https://github.com/wetix/svelte-reactive-form#readme",
   "license": "MIT",
   "main": "lib/index.cjs",
@@ -11,6 +11,9 @@
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
   "repository": "https://github.com/wetix/svelte-reactive-form",
+  "publishConfig": {
+    "access": "public"
+  },
   "keywords": [
     "SvelteJS",
     "Svelte",
@@ -27,8 +30,6 @@
     "types/*.d.ts"
   ],
   "scripts": {
-    "dev": "rollup --config rollup.dev.config.js -w",
-    "start": "sirv public --port 5500",
     "validate": "svelte-check",
     "tsd": "tsc -p tsdef.json",
     "test": "jest src",
