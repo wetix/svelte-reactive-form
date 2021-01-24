@@ -194,7 +194,7 @@ export default {
 
 **tsconfig.json**
 
-```json
+```js
 {
   "compilerOptions": {
     "types": ["svelte"]
