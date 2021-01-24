@@ -42,6 +42,7 @@ export type RuleExpression =
 
 export type RegisterOption<T> = {
   defaultValue?: T;
+  validateOnMount?: boolean;
   rules?: RuleExpression;
 };
 

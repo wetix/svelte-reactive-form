@@ -239,6 +239,12 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
       );
     }
 
+    cache.set(path, [store$, ruleExprs]);
+
+    if (option.validateOnMount) {
+      _validate(path, value);
+    }
+
     if (config.validateOnChange) {
       // on every state change, it will update the form
       store$.subscribe((state) => {
@@ -253,8 +259,6 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
         _updateForm();
       });
     }
-
-    cache.set(path, [store$, ruleExprs]);
 
     return {
       subscribe: store$.subscribe,

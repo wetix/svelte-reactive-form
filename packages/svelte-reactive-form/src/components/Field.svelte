@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onDestroy } from "svelte";
+  import { beforeUpdate, onDestroy } from "svelte";
   import { get } from "svelte/store";
   import type { Readable } from "svelte/store";
 
@@ -7,6 +7,7 @@
 
   export let name = "";
   export let defaultValue: any = "";
+  export let validateOnMount = false;
   export let control: Readable<FormControl>;
   export let rules: RuleExpression = "";
   export let type: "hidden" | "text" = "hidden";
@@ -16,9 +17,25 @@
   const { register, unregister, setValue, setTouched } = form;
 
   // reactive state
-  const state$ = register(name, {
+  let state$ = register(name, {
     defaultValue,
     rules,
+    validateOnMount,
+  });
+
+  let cache = {
+    validateOnMount,
+    defaultValue,
+    value: defaultValue,
+    rules: rules.slice(),
+  };
+
+  beforeUpdate(() => {
+    if (JSON.stringify(rules) !== JSON.stringify(cache.rules)) {
+      const value = $state$.value;
+      cache = Object.assign({}, cache, { defaultValue: value, value, rules });
+      state$ = register(name, cache);
+    }
   });
 
   const onChange = (e: any) => {

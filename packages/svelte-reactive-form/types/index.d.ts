@@ -7,6 +7,7 @@ import { defineRule, resolveRule } from "./rule";
 type FieldProps = {
   name: string;
   control: Readable<FormControl>;
+  validateOnMount?: false;
   defaultValue?: any;
   rules?: RuleExpression;
   type?: "hidden" | "text";
