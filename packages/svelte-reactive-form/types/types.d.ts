@@ -22,7 +22,7 @@ export declare type RegisterOption<T> = {
 export declare type FieldOption = {
     rules?: RuleExpression;
     defaultValue?: any;
-    handleChange?: (state: FieldState, node: HTMLElement) => void;
+    handleChange?: (state: FieldState, node: Element) => void;
 };
 export interface FormControl {
     register: <T>(path: string, option?: RegisterOption<T>) => Readable<FieldState>;
@@ -77,4 +77,5 @@ export declare type ResetFormOption = {
     errors: boolean;
     dirtyFields: boolean;
 };
+export declare type Field = [FieldStateStore, ValidationRule[]];
 export {};
