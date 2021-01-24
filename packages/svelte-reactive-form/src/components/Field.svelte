@@ -21,8 +21,8 @@
     rules,
   });
 
-  let value = defaultValue;
   const onChange = (e: any) => {
+    let value = e;
     if (e.target) {
       const target = e.target as HTMLInputElement;
       value = target.value;
@@ -31,8 +31,6 @@
       value = target.value;
     } else if (e instanceof CustomEvent) {
       value = e.detail;
-    } else {
-      value = e;
     }
     setValue(name, value);
   };
@@ -47,14 +45,15 @@
 </script>
 
 <div>
-  <input {name} {type} on:input {value} />
+  <input {name} {type} on:input value={$state$.value} />
   <slot
     pending={$state$.pending}
     valid={$state$.valid}
     errors={$state$.errors}
     dirty={$state$.dirty}
     touched={$state$.touched}
-    {value}
+    value={$state$.value}
     {onChange}
-    {onBlur} />
+    {onBlur}
+  />
 </div>

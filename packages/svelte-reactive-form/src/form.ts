@@ -15,6 +15,7 @@ import type {
   FormControl,
   Form,
   Fields,
+  Field,
   NodeElement,
   RegisterOption,
   ErrorCallback,
@@ -42,15 +43,19 @@ const defaultFieldState = {
 const fields = ["INPUT", "SELECT", "TEXTAREA"];
 
 // TODO: test case for _normalizeObject
-const _normalizeObject = (data: object, name: string, value: any) => {
+const _normalizeObject = (
+  data: Record<string, any>,
+  name: string,
+  value: any
+) => {
   const escape = name.match(/^\[(.*)\]$/);
-  const queue: [[object, Array<string>]] = [
+  const queue: [[Record<string, any>, Array<string>]] = [
     [data, escape ? [escape[1]] : name.split(".")],
   ];
   while (queue.length > 0) {
-    const first = queue.shift();
+    const first = <[Record<string, any>, string[]]>queue.shift();
     const paths = first[1];
-    const name = paths.shift();
+    const name = <string>paths.shift();
     const result = name.match(/^([a-z\_\.]+)((\[\d+\])+)/i);
 
     if (result && result.length > 2) {
@@ -62,7 +67,7 @@ const _normalizeObject = (data: object, name: string, value: any) => {
       let cur = first[0][name];
       const indexs = result[2].replace(/^\[+|\]+$/g, "").split("][");
       while (indexs.length > 0) {
-        const index = parseInt(indexs.shift(), 10);
+        const index = parseInt(<string>indexs.shift(), 10);
         // if nested index is last position && parent is last position
         if (indexs.length === 0) {
           if (paths.length === 0) {
@@ -101,14 +106,14 @@ const _normalizeObject = (data: object, name: string, value: any) => {
 
 const _strToValidator = (rule: string): ValidationRule => {
   const params = rule.split(/:/g);
-  const ruleName = params.shift();
-  if (!resolveRule(ruleName))
+  const name = <string>params.shift();
+  if (!resolveRule(name))
     console.error(
-      `[svelte-reactive-form] invalid validation function "${ruleName}"`
+      `[svelte-reactive-form] invalid validation function "${name}"`
     );
   return {
-    name: ruleName,
-    validate: toPromise<boolean | string>(resolveRule(ruleName)),
+    name,
+    validate: toPromise<boolean | string>(resolveRule(name)),
     params: params[0] ? params[0].split(",") : [],
   };
 };
@@ -119,22 +124,42 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
 
   // global state for form
   const form$ = writable<FormState>(Object.assign({}, defaultFormState));
+  const anyNonDirty = new Map();
+  const anyPending = new Map();
+  const anyNonTouched = new Map();
+  const anyInvalid = new Map();
 
   // errors should be private variable
   const errors$ = writable<Record<string, any>>({});
+
+  const _updateForm = () => {
+    form$.update((v) =>
+      Object.assign(v, {
+        valid: anyInvalid.size === 0,
+        dirty: anyNonDirty.size === 0,
+        touched: anyNonTouched.size === 0,
+        pending: anyPending.size > 0,
+      })
+    );
+  };
 
   const _useLocalStore = (path: string, state: object) => {
     const { subscribe, set, update } = writable<FieldState>(
       Object.assign({}, defaultFieldState, state)
     );
 
-    let unsubscribe;
+    let unsubscribe: null | Function;
     return {
       set,
       update,
       destroy() {
-        unsubscribe && unsubscribe();
         cache.delete(path); // clean our cache
+        anyInvalid.delete(path);
+        anyNonDirty.delete(path);
+        anyNonTouched.delete(path);
+        anyPending.delete(path);
+        _updateForm();
+        unsubscribe && unsubscribe();
       },
       subscribe(
         run: (value: FieldState) => void,
@@ -164,6 +189,8 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
       defaultValue: value,
       value,
     });
+
+    if (path === "") console.error("[svelte-reactive-form] missing field name");
 
     let ruleExprs: ValidationRule[] = [];
     const { rules = [] } = option;
@@ -196,10 +223,10 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
     } else if (typeOfRule !== null && typeOfRule === "object") {
       ruleExprs = Object.entries(<object>rules).reduce(
         (acc: ValidationRule[], cur: [string, any]) => {
-          const [ruleName, params] = cur;
+          const [name, params] = cur;
           acc.push({
-            name: ruleName,
-            validate: toPromise<boolean | string>(resolveRule(ruleName)),
+            name,
+            validate: toPromise<boolean | string>(resolveRule(name)),
             params: Array.isArray(params) ? params : [params],
           });
           return acc;
@@ -212,6 +239,21 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
       );
     }
 
+    if (config.validateOnChange) {
+      // on every state change, it will update the form
+      store$.subscribe((state) => {
+        if (state.valid) anyInvalid.delete(path);
+        else if (!state.valid) anyInvalid.set(path, true);
+        if (state.dirty) anyNonDirty.delete(path);
+        else if (!state.dirty) anyNonDirty.set(path, true);
+        if (!state.pending) anyPending.delete(path);
+        else if (state.pending) anyPending.set(path, true);
+        if (state.touched) anyNonTouched.delete(path);
+        else if (!state.touched) anyNonTouched.set(path, true);
+        _updateForm();
+      });
+    }
+
     cache.set(path, [store$, ruleExprs]);
 
     return {
@@ -222,13 +264,13 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
   const unregister = (path: string) => {
     if (cache.has(path)) {
       // clear subscriptions and cache
-      cache.get(path)[0].destroy();
+      (<[FieldStateStore, ValidationRule[]]>cache.get(path))[0].destroy();
     }
   };
 
   const setValue = <T>(path: string, value: T): void => {
     if (cache.has(path)) {
-      const [store$, validators] = cache.get(path);
+      const [store$, validators] = <Field>cache.get(path);
       if (config.validateOnChange && validators.length > 0) {
         _validate(path, value);
       } else {
@@ -241,42 +283,30 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
 
   const setError = (path: string, errors: string[]): void => {
     if (cache.has(path)) {
-      const [store$] = cache.get(path);
+      const [store$] = <Field>cache.get(path);
       store$.update((v: FieldState) => Object.assign(v, { errors }));
     } else {
       _setStore(path, { errors });
     }
-    // update field errors
-    errors$.update((v) => {
-      if (errors.length === 0) {
-        if (v[path]) delete v[path];
-        if (Object.keys(v).length === 0)
-          form$.update((v) => Object.assign(v, { valid: true }));
-        return v;
-      }
-
-      form$.update((v) => Object.assign(v, { valid: false }));
-      return Object.assign(v, { [path]: errors });
-    });
   };
 
   const setTouched = (path: string, touched: boolean): void => {
     if (cache.has(path)) {
-      const [store$, _] = cache.get(path);
+      const [store$] = <Field>cache.get(path);
       store$.update((v) => Object.assign(v, { touched }));
     }
   };
 
   const getValue = <T>(path: string): T | null => {
     if (cache.has(path)) {
-      const [store$, _] = cache.get(path);
+      const [store$] = <Field>cache.get(path);
       const state = get<FieldState>(store$);
       return <T>state.value;
     }
     return null;
   };
 
-  const _useField = (node: NodeElement, option: FieldOption = {}) => {
+  const _useField = (node: Element, option: FieldOption = {}) => {
     option = Object.assign({ rules: [], defaultValue: "" }, option);
     const selector = fields.join(",");
     while (!fields.includes(node.nodeName)) {
@@ -284,7 +314,7 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
       node = el;
       if (el) break;
     }
-    const name = node.name || node.id;
+    const name = (<NodeElement>node).name || node.id;
     if (name === "") console.error("[svelte-reactive-form] empty field name");
 
     const { defaultValue, rules } = option;
@@ -322,10 +352,13 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
       _attachEvent("change", onChange);
     }
 
-    let unsubscribe;
+    let unsubscribe: null | Function;
     if (option.handleChange) {
       unsubscribe = state$.subscribe((v: FieldState) => {
-        option.handleChange(v, node);
+        (<(state: FieldState, node: Element) => void>option.handleChange)(
+          v,
+          <Element>node
+        );
       });
     }
 
@@ -338,7 +371,7 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
     };
   };
 
-  const reset = (values: Fields, option?: ResetFormOption) => {
+  const reset = (values?: Fields, option?: ResetFormOption) => {
     const defaultOption = {
       dirtyFields: false,
       errors: false,
@@ -349,7 +382,7 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
     }
     const fields = Array.from(cache.values());
     for (let i = 0, len = fields.length; i < len; i++) {
-      const [store$, _] = fields[i];
+      const [store$] = fields[i];
       store$.update((v) => {
         const { defaultValue } = v;
         return Object.assign({}, defaultFieldState, {
@@ -360,12 +393,12 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
     }
   };
 
-  const useField = (node: NodeElement, option: FieldOption = {}) => {
+  const useField = (node: Element, option: FieldOption = {}) => {
     let field = _useField(node, option);
 
     return {
       update(newOption: FieldOption = {}) {
-        field.destroy();
+        field.destroy(); // reset
         field = _useField(node, newOption);
       },
       destroy() {
@@ -386,8 +419,9 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
       valid = true;
     const { elements = [] } = <HTMLFormElement>e.currentTarget;
     for (let i = 0, len = elements.length; i < len; i++) {
-      const name = elements[i].name || elements[i].id;
-      let value = elements[i].value || "";
+      const el = <HTMLInputElement>elements[i];
+      const name = el.name || el.id;
+      let value = el.value || "";
       if (!name) continue;
       if (config.resolver) {
         data = _normalizeObject(data, name, value);
@@ -397,10 +431,10 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
       if (cache.has(name)) {
         const store = cache.get(name);
         // TODO: check checkbox and radio
-        const { nodeName, type } = elements[i];
+        const { nodeName, type } = el;
         switch (type) {
           case "checkbox":
-            value = elements[i].checked ? value : "";
+            value = el.checked ? value : "";
             break;
         }
 
@@ -431,37 +465,38 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
 
   const _validate = (path: string, value: any): Promise<FieldState> => {
     const promises: Promise<ValidationResult>[] = [];
-    if (cache.has(path)) {
-      const [store$, validators] = cache.get(path);
-      let state = get(store$);
+    // if (cache.has(path)) {
+    const [store$, validators] = <Field>cache.get(path);
+    let state = get(store$);
 
-      if (validators.length === 0) {
-        state = Object.assign(state, { errors: [], valid: true });
-        store$.set(state);
-        return Promise.resolve(state);
-      }
-      form$.update((v) => Object.assign(v, { pending: true, valid: false }));
-      store$.update((v: FieldState) =>
-        Object.assign(v, { errors: [], dirty: true, pending: true, value })
-      );
-
-      for (let i = 0, len = validators.length; i < len; i++) {
-        const { validate, params } = validators[i];
-        promises.push(validate(value, params));
-      }
-
-      return Promise.all(promises).then((result: ValidationResult[]) => {
-        const errors = <string[]>(
-          result.filter((v: ValidationResult) => v !== true)
-        );
-        const valid = errors.length === 0;
-        store$.update((v: FieldState) =>
-          Object.assign(v, { pending: false, errors, valid })
-        );
-        setError(path, errors);
-        return get(store$);
-      });
+    if (validators.length === 0) {
+      state = Object.assign(state, { errors: [], valid: true });
+      store$.set(state);
+      return Promise.resolve(state);
     }
+    form$.update((v) => Object.assign(v, { pending: true, valid: false }));
+    store$.update((v: FieldState) =>
+      Object.assign(v, { errors: [], dirty: true, pending: true, value })
+    );
+
+    for (let i = 0, len = validators.length; i < len; i++) {
+      const { validate, params } = validators[i];
+      promises.push(validate(value, params));
+    }
+
+    return Promise.all(promises).then((result: ValidationResult[]) => {
+      const errors = <string[]>(
+        result.filter((v: ValidationResult) => v !== true)
+      );
+      const valid = errors.length === 0;
+      store$.update((v: FieldState) =>
+        Object.assign(v, { pending: false, errors, valid })
+      );
+      // setError(path, errors);
+
+      return Promise.resolve(<FieldState>get(store$));
+    });
+    // }
   };
 
   const validate = (paths: string | string[] = Array.from(cache.keys())) => {
@@ -471,7 +506,7 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
     let data = {};
     for (let i = 0, len = paths.length; i < len; i++) {
       if (!cache.has(paths[i])) continue;
-      const [store$] = cache.get(paths[i]);
+      const [store$] = <Field>cache.get(paths[i]);
       const state = get(store$);
       promises.push(_validate(paths[i], state.value));
       _normalizeObject(data, paths[i], state.value);
@@ -485,6 +520,15 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
     });
   };
 
+  const getValues = () => {
+    let data = {};
+    for (const [name, [store$]] of cache.entries()) {
+      const state = get(store$);
+      _normalizeObject(data, name, state.value);
+    }
+    return data;
+  };
+
   return {
     control: readable<FormControl>(
       {
@@ -494,6 +538,7 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
         getValue,
         setError,
         setTouched,
+        getValues,
         reset,
       },
       () => {}
@@ -519,6 +564,7 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
     getValue,
     setError,
     setTouched,
+    getValues,
     onSubmit,
     reset,
     validate,
