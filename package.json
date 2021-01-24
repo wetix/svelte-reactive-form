@@ -10,7 +10,7 @@
     "dev": "rollup -w --config rollup.dev.config.js",
     "start": "sirv public --port 5500",
     "build": "rollup -c",
-    "validate": "lerna run svelte-check",
+    "validate": "lerna run validate",
     "tsd": "lerna run tsd"
   },
   "devDependencies": {

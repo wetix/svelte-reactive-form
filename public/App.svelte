@@ -1,10 +1,5 @@
 <script lang="ts">
-  import { fade } from "svelte/transition";
-  import {
-    useForm,
-    Field,
-    defineRule,
-  } from "../packages/svelte-reactive-form/src";
+  import { useForm, defineRule } from "../packages/svelte-reactive-form/src";
   import { required, minLength } from "../packages/rules/src";
   import Component from "./Component.svelte";
   import DynamicField from "./DynamicField.svelte";
@@ -22,12 +17,6 @@
   });
 
   let step = 0;
-
-  const components = [Component2, Component3];
-
-  const goNext = () => {
-    step += 1;
-  };
 
   const form$ = useForm({ validateOnChange: true });
   const { register, setValue, validate, control, onSubmit } = form$;
@@ -57,8 +46,6 @@
   const setCustomValue = () => {
     setValue("custom_field", customValue);
   };
-
-  const onChange = (v, node) => {};
 
   const formB$ = useForm({ validateOnChange: true });
   const customField$ = formB$.register("custom_field", {
@@ -115,19 +102,4 @@
 <svelte:component this={forms[selectedForm].component} />
 
 <style>
-  .row {
-    display: flex;
-  }
-
-  .column {
-    width: 50%;
-  }
-  .errors {
-    color: red;
-  }
-
-  button[type="submit"] {
-    margin: 10px 0;
-    width: 100%;
-  }
 </style>
