@@ -2,7 +2,7 @@
   "name": "@svelte-reactive-form/rules",
   "version": "0.7.14",
   "description": "Form validation rules of svelte-reactive-form.",
-  "author": "si3nloong <sianloong90@gmail.com>",
+  "author": "si3nloong <sianloong90@gmail.com> (https://github.com/si3nloong)",
   "homepage": "https://github.com/wetix/svelte-reactive-form#readme",
   "license": "MIT",
   "main": "lib/index.cjs",
@@ -10,6 +10,9 @@
   "module": "lib/index.mjs",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
+  "publishConfig": {
+    "access": "public"
+  },
   "directories": {
     "lib": "lib",
     "test": "__tests__"
@@ -21,9 +24,6 @@
     "index.mjs",
     "types/*.d.ts"
   ],
-  "publishConfig": {
-    "access": "public"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/wetix/svelte-reactive-form.git"
