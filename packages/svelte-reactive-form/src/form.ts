@@ -143,7 +143,7 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
     );
   };
 
-  const _useLocalStore = (path: string, state: object) => {
+  const _useLocalStore = (path: string, state: Partial<FieldState>) => {
     const { subscribe, set, update } = writable<FieldState>(
       Object.assign({}, defaultFieldState, state)
     );
@@ -175,7 +175,7 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
     };
   };
 
-  const _setStore = (path: string, state: object = {}) => {
+  const _setStore = (path: string, state: Partial<FieldState> = {}) => {
     const store$ = _useLocalStore(path, state);
     cache.set(path, [store$, []]);
   };
@@ -185,10 +185,7 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
     option: RegisterOption<T> = {}
   ): Readable<FieldState> => {
     const value = option.defaultValue || "";
-    const store$ = _useLocalStore(path, {
-      defaultValue: value,
-      value,
-    });
+    const store$ = _useLocalStore(path, { value });
 
     if (path === "") console.error("[svelte-reactive-form] missing field name");
 

@@ -20,6 +20,7 @@
   // reactive state
   let state$ = register(name, {
     defaultValue,
+    rules,
     validateOnMount,
     bail,
   });
