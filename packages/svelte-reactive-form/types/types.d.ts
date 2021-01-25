@@ -17,11 +17,14 @@ export declare type Validator = string | ValidationFunction;
 export declare type RuleExpression = string | Array<Validator> | Record<string, Validator> | Record<string, any>;
 export declare type RegisterOption<T> = {
     defaultValue?: T;
+    bail?: boolean;
+    validateOnMount?: boolean;
     rules?: RuleExpression;
 };
 export declare type FieldOption = {
-    rules?: RuleExpression;
     defaultValue?: any;
+    rules?: RuleExpression;
+    validateOnMount?: boolean;
     handleChange?: (state: FieldState, node: Element) => void;
 };
 export interface FormControl {
@@ -29,6 +32,7 @@ export interface FormControl {
     unregister: (path: string) => void;
     setValue: (path: string, value: any) => void;
     getValue: (path: string) => any;
+    getValues: () => Record<string, any>;
     setError: (path: string, values: string[]) => void;
     setTouched: (path: string, state: boolean) => void;
     reset: (values?: Fields) => void;
