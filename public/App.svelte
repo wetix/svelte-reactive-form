@@ -7,6 +7,7 @@
   import Component3 from "./FormB.svelte";
   import FormC from "./FormC.svelte";
   import DynamicForm from "./DynamicForm.svelte";
+  import DynamicValidator from "./DynamicValidator.svelte";
   import Form from "./Form.svelte";
   import UserInformation from "./UserInformation.svelte";
 
@@ -89,6 +90,10 @@
       name: "Dynamic Form",
       component: DynamicForm,
     },
+    {
+      name: "Dynamic Validator",
+      component: DynamicValidator,
+    },
   ];
 </script>
 
@@ -102,4 +107,7 @@
 <svelte:component this={forms[selectedForm].component} />
 
 <style>
+  :global(.errors) {
+    color: red;
+  }
 </style>

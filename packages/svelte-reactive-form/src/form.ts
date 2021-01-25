@@ -356,6 +356,10 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
       _attachEvent("change", onChange);
     }
 
+    if (option.validateOnMount) {
+      _validate(name, defaultValue);
+    }
+
     let unsubscribe: null | Function;
     if (option.handleChange) {
       unsubscribe = state$.subscribe((v: FieldState) => {
@@ -467,7 +471,11 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
     form$.update((v) => Object.assign(v, { valid, submitting: false }));
   };
 
-  const _validate = (path: string, value: any): Promise<FieldState> => {
+  const _validate = (
+    path: string,
+    value: any,
+    bail: boolean = false
+  ): Promise<FieldState> => {
     const promises: Promise<ValidationResult>[] = [];
     // if (cache.has(path)) {
     const [store$, validators] = <Field>cache.get(path);
@@ -486,6 +494,19 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
     for (let i = 0, len = validators.length; i < len; i++) {
       const { validate, params } = validators[i];
       promises.push(validate(value, params));
+    }
+
+    if (bail) {
+      return Promise.race(promises).then((result: ValidationResult) => {
+        let state = { pending: false };
+        if (typeof result === "string") {
+          state = Object.assign(state, { errors: [result], valid: false });
+        } else {
+          state = Object.assign(state, { errors: [], valid: true });
+        }
+        store$.update((v: FieldState) => Object.assign(v, state));
+        return Promise.resolve(<FieldState>get(store$));
+      });
     }
 
     return Promise.all(promises).then((result: ValidationResult[]) => {

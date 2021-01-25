@@ -7,6 +7,7 @@
 
   export let name = "";
   export let defaultValue: any = "";
+  export let bail = false;
   export let validateOnMount = false;
   export let control: Readable<FormControl>;
   export let rules: RuleExpression = "";
@@ -19,16 +20,11 @@
   // reactive state
   let state$ = register(name, {
     defaultValue,
-    rules,
     validateOnMount,
+    bail,
   });
 
-  let cache = {
-    validateOnMount,
-    defaultValue,
-    value: defaultValue,
-    rules: rules.slice(),
-  };
+  let cache = Object.assign({}, $$props);
 
   beforeUpdate(() => {
     if (JSON.stringify(rules) !== JSON.stringify(cache.rules)) {

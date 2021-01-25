@@ -42,13 +42,15 @@ export type RuleExpression =
 
 export type RegisterOption<T> = {
   defaultValue?: T;
+  bail?: boolean;
   validateOnMount?: boolean;
   rules?: RuleExpression;
 };
 
 export type FieldOption = {
-  rules?: RuleExpression;
   defaultValue?: any;
+  rules?: RuleExpression;
+  validateOnMount?: boolean;
   handleChange?: (state: FieldState, node: Element) => void;
 };
 

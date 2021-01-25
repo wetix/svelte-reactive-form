@@ -73,6 +73,7 @@
   name="option"
   defaultValue="option-b"
   {control}
+  validateOnMount={true}
   rules={["required"]}
   let:onChange
   let:value
