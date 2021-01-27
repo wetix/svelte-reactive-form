@@ -3,13 +3,13 @@
   import { required, minLength } from "../packages/rules/src";
   import Component from "./Component.svelte";
   import DynamicField from "./DynamicField.svelte";
-  import Component2 from "./FormA.svelte";
-  import Component3 from "./FormB.svelte";
+  import ConditionalForm from "./ConditionalForm.svelte";
   import FormC from "./FormC.svelte";
   import DynamicForm from "./DynamicForm.svelte";
   import DynamicValidator from "./DynamicValidator.svelte";
   import Form from "./Form.svelte";
   import UserInformation from "./UserInformation.svelte";
+  import FormB from "./FormB.svelte";
 
   defineRule("required", required);
   defineRule("minLength", minLength);
@@ -28,11 +28,6 @@
     defaultValue: "Custom",
     rules: ["required", "minLength:10"],
   });
-
-  let toggle = true;
-  const successCb = (v) => {
-    console.log("submit =>", v);
-  };
 
   const asyncValidation = () => {
     return new Promise<boolean>((resolve) => {
@@ -85,6 +80,14 @@
     {
       name: "Form A",
       component: FormC,
+    },
+    {
+      name: "Form B",
+      component: FormB,
+    },
+    {
+      name: "Conditional Form",
+      component: ConditionalForm,
     },
     {
       name: "Dynamic Form",

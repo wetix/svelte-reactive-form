@@ -13,3 +13,5 @@
 - 🚸 pass context to rules
 - 🚸 update docs (Advanced usage, api etc)
 - 🚸 test cases
+
+- form is false on initialise.

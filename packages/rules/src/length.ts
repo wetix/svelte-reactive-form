@@ -1,4 +1,7 @@
 export const minLength = (val: any, [min]: [number]): boolean | string => {
+  if (Array.isArray(val) && val.length < min) {
+    return `Array must contains ${min} items.`;
+  }
   const typeOfVal = typeof val;
   switch (typeOfVal) {
     case "string":
