@@ -2,10 +2,11 @@
   "compilerOptions": {
     "types": ["jest", "node", "svelte"],
     "esModuleInterop": true,
+    "isolatedModules": false,
     "allowSyntheticDefaultImports": true,
     "strict": true,
-    "skipLibCheck": true
+    "skipLibCheck": false
   },
   "extends": "@tsconfig/svelte/tsconfig.json",
-  "exclude": ["node_modules/*", "__sapper__/*", "public/*"]
+  "exclude": ["node_modules", "__sapper__/*"]
 }
