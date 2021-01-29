@@ -4,8 +4,9 @@
 
 <p>
 
-[![Build Status](https://github.com/wetix/svelte-reactive-form/workflows/ci/badge.svg?branch=master)](https://github.com/wetix/svelte-reactive-form)
+[![Svelte v3](https://img.shields.io/badge/svelte-v3-orange.svg)](https://svelte.dev)
 [![npm](https://img.shields.io/npm/v/svelte-reactive-form.svg)](https://www.npmjs.com/package/svelte-reactive-form)
+[![Build Status](https://github.com/wetix/svelte-reactive-form/workflows/ci/badge.svg?branch=master)](https://github.com/wetix/svelte-reactive-form)
 [![download](https://img.shields.io/npm/dw/svelte-reactive-form.svg)](https://www.npmjs.com/package/svelte-reactive-form)
 [![Bundle Size](https://badgen.net/bundlephobia/minzip/svelte-reactive-form)](https://bundlephobia.com/result?p=svelte-reactive-form)
 [![LICENCE](https://img.shields.io/github/license/wetix/svelte-reactive-form)](https://github.com/wetix/svelte-reactive-form/blob/master/LICENSE)

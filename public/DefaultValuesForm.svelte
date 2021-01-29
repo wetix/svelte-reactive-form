@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onDestroy } from "svelte";
+  import type { FormControl } from "svelte-reactive-form/src/types";
   import {
     useForm,
     Field,
@@ -28,14 +29,21 @@
     });
   };
 
+  const equalToField = (v: string, params: any[], ctx: FormControl) => {
+    return v === ctx.getValue("email")
+      ? true
+      : "Confirmation Email must be same as Email!";
+  };
+
   const onSubmit = () => {
     alert(JSON.stringify(form$.getValues()));
   };
 </script>
 
 <Field
-  name="name"
   {control}
+  name="name"
+  validateOnMount={true}
   rules={["required", asyncPromise, "minLength:6"]}
   let:onChange
   let:value
@@ -45,16 +53,18 @@
   let:touched
   let:errors
 >
-  Name : <input type="text" on:input={onChange} />
+  Name : <input type="text" on:input={onChange} {value} />
   {JSON.stringify({ valid, errors, pending, dirty, touched, value })}
   {#each errors as item}
     <div class="error">{item}</div>
   {/each}
 </Field>
 <Field
-  name="email"
   {control}
+  name="email"
+  defaultValue="sianloong@hotmail.com"
   rules={"required|email"}
+  validateOnMount={true}
   let:onChange
   let:onFocus
   let:onBlur
@@ -67,6 +77,7 @@
 >
   Email : <input
     type="text"
+    {value}
     on:focus={onFocus}
     on:input={onChange}
     on:blur={onBlur}
@@ -77,12 +88,12 @@
   {/each}
 </Field>
 <Field
-  name="option"
-  defaultValue="option-b"
   {control}
+  name="confirmEmail"
+  rules={[equalToField]}
   validateOnMount={true}
-  rules={["required"]}
   let:onChange
+  let:onFocus
   let:onBlur
   let:value
   let:valid
@@ -91,8 +102,36 @@
   let:touched
   let:errors
 >
-  <select on:change={onChange} on:blur={onBlur}>
-    {#each ["option-a", "option-b", "option-c"] as item}
+  Confirmation Email : <input
+    type="text"
+    {value}
+    on:focus={onFocus}
+    on:input={onChange}
+    on:blur={onBlur}
+  />
+  {JSON.stringify({ valid, errors, pending, dirty, touched, value })}
+  {#each errors as item}
+    <div class="error">{item}</div>
+  {/each}
+</Field>
+<Field
+  {control}
+  name="option"
+  defaultValue="option-b"
+  validateOnMount={true}
+  rules={["required", "contains:option-a,option-b,option-c,symbol-%2C%40"]}
+  let:onChange
+  let:onFocus
+  let:onBlur
+  let:value
+  let:valid
+  let:pending
+  let:dirty
+  let:touched
+  let:errors
+>
+  <select on:change={onChange} on:focus={onFocus} on:blur={onBlur}>
+    {#each ["option-a", "option-b", "option-c", "option-d"] as item}
       <option value={item} selected={item === value}>{item}</option>
     {/each}
   </select>

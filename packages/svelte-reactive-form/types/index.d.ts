@@ -22,6 +22,7 @@ type FieldSlot = {
     dirty: boolean;
     touched: boolean;
     value: any;
+    onFocus(e: Event): void;
     onChange:
       | ((e: Event) => void | {})
       | ((e: CustomEvent) => void | {})

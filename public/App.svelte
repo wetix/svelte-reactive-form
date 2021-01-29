@@ -1,8 +1,15 @@
 <script lang="ts">
   import { useForm, defineRule } from "../packages/svelte-reactive-form/src";
-  import { required, minLength } from "../packages/rules/src";
+  import {
+    required,
+    minLength,
+    alphaNum,
+    integer,
+    email,
+    contains,
+  } from "../packages/rules/src";
   import Component from "./Component.svelte";
-  import DynamicField from "./DynamicField.svelte";
+  import DefaultValuesForm from "./DefaultValuesForm.svelte";
   import ConditionalForm from "./ConditionalForm.svelte";
   import FormC from "./FormC.svelte";
   import DynamicForm from "./DynamicForm.svelte";
@@ -12,6 +19,10 @@
   import FormB from "./FormB.svelte";
 
   defineRule("required", required);
+  defineRule("alphaNum", alphaNum);
+  defineRule("contains", contains);
+  defineRule("email", email);
+  defineRule("integer", integer);
   defineRule("minLength", minLength);
   defineRule("phoneNo", (val: any) => {
     return /[0-9]+/.test(val) || "invalid phone number format";
@@ -77,6 +88,10 @@
 
   let selectedForm = 0;
   const forms = [
+    {
+      name: "Default Value Form",
+      component: DefaultValuesForm,
+    },
     {
       name: "Form A",
       component: FormC,

@@ -9,9 +9,10 @@
     "types": ["jest", "node", "svelte"]
   },
   "extends": "@tsconfig/svelte/tsconfig.json",
-  "include": ["src/**/*"],
+  "include": ["src/*", "src/components/*"],
   "exclude": [
     "src/index.ts",
+    "__tests__*",
     "node_modules/*",
     "__sapper__/*",
     "public/*",

@@ -30,6 +30,20 @@
   };
 </script>
 
+<Field
+  {control}
+  name="number"
+  rules={["required", "integer"]}
+  let:onChange
+  let:dirty
+  let:pending
+  let:valid
+  let:value
+  let:errors
+>
+  <span><input type="text" {value} on:input={onChange} /></span>
+  {JSON.stringify({ dirty, pending, valid, value, errors })}
+</Field>
 {#each items as item, i}
   <div style="border: 1px solid red;">
     <input type="checkbox" checked={item.checked} on:change={toggleCheck(i)} />

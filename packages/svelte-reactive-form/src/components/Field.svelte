@@ -8,19 +8,21 @@
   export let name = "";
   export let defaultValue: any = "";
   export let bail = false;
+  export let validateOnBlur = false;
   export let validateOnMount = false;
   export let control: Readable<FormControl>;
   export let rules: RuleExpression = "";
   export let type: "hidden" | "text" = "hidden";
 
   const form = get<FormControl>(control);
-  if (!form) console.error("[svelte-reactive-form] Missing form control");
+  if (!form) console.error("[svelte-reactive-form] missing form control");
   const { register, unregister, setValue, setTouched } = form;
 
   // reactive state
-  let state$ = register(name, {
+  let state$ = register<typeof defaultValue>(name, {
     defaultValue,
     rules,
+    validateOnBlur,
     validateOnMount,
     bail,
   });
@@ -38,10 +40,10 @@
   const onChange = (e: any) => {
     let value = e;
     if (e.target) {
-      const target = e.target as HTMLInputElement;
+      const target = <HTMLInputElement>e.target;
       value = target.value;
     } else if (e.currentTarget) {
-      const target = e.currentTarget as HTMLInputElement;
+      const target = <HTMLInputElement>e.currentTarget;
       value = target.value;
     } else if (e instanceof CustomEvent) {
       value = e.detail;
@@ -49,8 +51,12 @@
     setValue(name, value);
   };
 
-  const onBlur = () => {
+  const onFocus = () => {
     setTouched(name, true);
+  };
+
+  const onBlur = () => {
+    setTouched(name, false);
   };
 
   onDestroy(() => {
@@ -68,6 +74,7 @@
     touched={$state$.touched}
     value={$state$.value}
     {onChange}
+    {onFocus}
     {onBlur}
   />
 </div>

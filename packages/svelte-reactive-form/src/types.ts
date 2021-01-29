@@ -43,6 +43,7 @@ export type RuleExpression =
 export type RegisterOption<T> = {
   defaultValue?: T;
   bail?: boolean;
+  validateOnBlur?: boolean;
   validateOnMount?: boolean;
   rules?: RuleExpression;
 };
@@ -112,7 +113,11 @@ export interface FieldStateStore extends Writable<FieldState> {
 
 export type ValidationRule = {
   name: string;
-  validate: (...args: any) => Promise<ValidationResult>;
+  validate: (
+    value: any,
+    params?: string[],
+    ctx?: FormControl
+  ) => Promise<ValidationResult>;
   params: any[];
 };
 

@@ -273,7 +273,7 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
     if (cache.has(path)) {
       const [store$, validators] = <Field>cache.get(path);
       if (config.validateOnChange && validators.length > 0) {
-        _validate(path, value);
+        _validate(path, value, false);
       } else {
         store$.update((v) => Object.assign(v, { dirty: true, value }));
       }
@@ -294,6 +294,8 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
   const setTouched = (path: string, touched: boolean): void => {
     if (cache.has(path)) {
       const [store$] = <Field>cache.get(path);
+      // TODO: run validation when untouched the field
+      // _validate(path, value, false);
       store$.update((v) => Object.assign(v, { touched }));
     }
   };
@@ -471,6 +473,7 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
   const _validate = (
     path: string,
     value: any,
+    soft: boolean = true,
     bail: boolean = false
   ): Promise<FieldState> => {
     const promises: Promise<ValidationResult>[] = [];
@@ -483,14 +486,20 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
       store$.set(state);
       return Promise.resolve(state);
     }
+
     form$.update((v) => Object.assign(v, { pending: true, valid: false }));
     store$.update((v: FieldState) =>
-      Object.assign(v, { errors: [], dirty: true, pending: true, value })
+      Object.assign(v, {
+        dirty: v.dirty ? true : soft ? false : true,
+        errors: [],
+        pending: true,
+        value,
+      })
     );
 
     for (let i = 0, len = validators.length; i < len; i++) {
       const { validate, params } = validators[i];
-      promises.push(validate(value, params));
+      promises.push(validate(value, params, context));
     }
 
     if (bail) {
@@ -551,20 +560,19 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
     return data;
   };
 
+  const context = {
+    register,
+    unregister,
+    setValue,
+    getValue,
+    setError,
+    setTouched,
+    getValues,
+    reset,
+  };
+
   return {
-    control: readable<FormControl>(
-      {
-        register,
-        unregister,
-        setValue,
-        getValue,
-        setError,
-        setTouched,
-        getValues,
-        reset,
-      },
-      () => {}
-    ),
+    control: readable<FormControl>(context, () => {}),
     subscribe(
       run: (value: FormState) => void,
       invalidate?: (value?: FormState) => void
