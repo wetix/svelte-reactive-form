@@ -5,9 +5,9 @@
   "author": "si3nloong <sianloong90@gmail.com> (https://github.com/si3nloong)",
   "homepage": "https://github.com/wetix/svelte-reactive-form#readme",
   "license": "MIT",
-  "main": "lib/index.cjs",
+  "main": "lib/cjs/index.js",
   "browser": "lib/index.js",
-  "module": "lib/index.mjs",
+  "module": "lib/esm/index.js",
   "svelte": "src/index.ts",
   "types": "types/index.d.ts",
   "repository": "https://github.com/wetix/svelte-reactive-form",
@@ -22,21 +22,15 @@
     "form"
   ],
   "files": [
-    "package.json",
-    "src/*",
-    "src/**/*.svelte",
-    "index.cjs",
-    "index.mjs",
-    "types/*.d.ts"
+    "src",
+    "lib",
+    "types"
   ],
   "scripts": {
     "validate": "svelte-check",
     "tsd": "tsc -p tsdef.json",
     "test": "jest src",
     "test:watch": "npm run test --watch"
-  },
-  "peerDependencies": {
-    "svelte": "^3.29.0"
   },
   "gitHead": "13f0f8dadcd537eb7d68c7a559c86336a8ed9c41"
 }
