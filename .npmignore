@@ -9,3 +9,4 @@ babel.config.js
 .gitignore
 yarn.lock
 TODO.md
+.DS_Store
