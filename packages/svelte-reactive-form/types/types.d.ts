@@ -82,5 +82,7 @@ export declare type ResetFormOption = {
     errors: boolean;
     dirtyFields: boolean;
 };
-export declare type Field = [FieldStateStore, ValidationRule[]];
+export declare type Field = [FieldStateStore, ValidationRule[], {
+    bail: boolean;
+}];
 export {};
