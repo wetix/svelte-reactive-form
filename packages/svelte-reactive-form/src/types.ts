@@ -126,4 +126,4 @@ export type ResetFormOption = {
   dirtyFields: boolean;
 };
 
-export type Field = [FieldStateStore, ValidationRule[]];
+export type Field = [FieldStateStore, ValidationRule[], { bail: boolean }];

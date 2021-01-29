@@ -60,7 +60,7 @@
         </Field>
       </div>
       <div>
-        Custom Field :<input type="text" bind:value={customValue} />
+        Custom Field :<input type="text" />
         <button type="button" on:click={setCustomValue}>ok</button>
         <div>Dirty :{$state$.dirty}</div>
         <div>Valid :{$state$.valid}</div>

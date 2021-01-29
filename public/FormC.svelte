@@ -1,24 +1,11 @@
 <script lang="ts">
-  import { onDestroy } from "svelte";
-  import {
-    useForm,
-    Field,
-    defineRule,
-  } from "../packages/svelte-reactive-form/src";
+  import { useForm, Field } from "../packages/svelte-reactive-form/src";
 
   const form$ = useForm({
     validateOnChange: true,
   });
 
   const { control } = form$;
-
-  // const custom$ = form$.register("custom", {
-  //   rules: ["required"],
-  // });
-
-  //   form$.subscribe((state) => {
-  //     console.log("State =>", state);
-  //   });
 
   const asyncPromise = () => {
     return new Promise((resolve) => {
@@ -36,6 +23,7 @@
 <Field
   name="name"
   {control}
+  bail={true}
   rules={["required", asyncPromise, "minLength:6"]}
   let:onChange
   let:value
@@ -54,7 +42,7 @@
 <Field
   name="email"
   {control}
-  rules={"required|email"}
+  rules="required|email"
   let:onChange
   let:onFocus
   let:onBlur

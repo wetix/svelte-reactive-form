@@ -114,13 +114,15 @@ const _strToValidator = (rule: string): ValidationRule => {
   return {
     name,
     validate: toPromise<boolean | string>(resolveRule(name)),
-    params: params[0] ? params[0].split(",") : [],
+    params: params[0]
+      ? params[0].split(",").map((v) => decodeURIComponent(v))
+      : [],
   };
 };
 
 export const useForm = (config: Config = { validateOnChange: true }): Form => {
   // cache for form fields
-  const cache: Map<string, [FieldStateStore, ValidationRule[]]> = new Map();
+  const cache: Map<string, Field> = new Map();
 
   // global state for form
   const form$ = writable<FormState>(Object.assign({}, defaultFormState));
@@ -177,7 +179,7 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
 
   const _setStore = (path: string, state: Partial<FieldState> = {}) => {
     const store$ = _useLocalStore(path, state);
-    cache.set(path, [store$, []]);
+    cache.set(path, [store$, [], { bail: false }]);
   };
 
   const register = <T>(
@@ -190,7 +192,7 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
     if (path === "") console.error("[svelte-reactive-form] missing field name");
 
     let ruleExprs: ValidationRule[] = [];
-    const { rules = [] } = option;
+    const { bail = false, rules = [] } = option;
     const typeOfRule = typeof rules;
     if (typeOfRule === "string") {
       ruleExprs = ((rules as string).match(/[^\|]+/g) || []).map((v: string) =>
@@ -236,10 +238,11 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
       );
     }
 
-    cache.set(path, [store$, ruleExprs]);
+    const field: Field = [store$, ruleExprs, { bail }];
+    cache.set(path, field);
 
     if (option.validateOnMount) {
-      _validate(path, value);
+      _validate(field, path, {});
     }
 
     if (config.validateOnChange) {
@@ -265,17 +268,17 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
   const unregister = (path: string) => {
     if (cache.has(path)) {
       // clear subscriptions and cache
-      (<[FieldStateStore, ValidationRule[]]>cache.get(path))[0].destroy();
+      (<Field>cache.get(path))[0].destroy();
     }
   };
 
   const setValue = <T>(path: string, value: T): void => {
     if (cache.has(path)) {
-      const [store$, validators] = <Field>cache.get(path);
-      if (config.validateOnChange && validators.length > 0) {
-        _validate(path, value, false);
+      const field = <Field>cache.get(path);
+      if (config.validateOnChange) {
+        _validate(field, path, { dirty: true, value });
       } else {
-        store$.update((v) => Object.assign(v, { dirty: true, value }));
+        field[0].update((v) => Object.assign(v, { dirty: true, value }));
       }
     } else {
       _setStore(path);
@@ -293,10 +296,9 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
 
   const setTouched = (path: string, touched: boolean): void => {
     if (cache.has(path)) {
-      const [store$] = <Field>cache.get(path);
-      // TODO: run validation when untouched the field
-      // _validate(path, value, false);
-      store$.update((v) => Object.assign(v, { touched }));
+      const field = <Field>cache.get(path);
+      const state = get(field[0]);
+      _validate(field, path, { touched });
     }
   };
 
@@ -356,7 +358,8 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
     }
 
     if (option.validateOnMount) {
-      _validate(name, defaultValue);
+      const field = <Field>cache.get(name);
+      _validate(field, name, { value: defaultValue });
     }
 
     let unsubscribe: null | Function;
@@ -436,7 +439,7 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
       }
       // TODO: shouldn't only loop elements, should check cache keys which not exists in elements as well
       if (cache.has(name)) {
-        const store = cache.get(name);
+        const field = <Field>cache.get(name);
         // TODO: check checkbox and radio
         const { nodeName, type } = el;
         switch (type) {
@@ -445,7 +448,7 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
             break;
         }
 
-        const result = await _validate(name, value);
+        const result = await _validate(field, name, { value });
         valid = valid && result.valid; // update valid
         data = _normalizeObject(data, name, value);
       }
@@ -471,16 +474,15 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
   };
 
   const _validate = (
+    [store$, validators, { bail }]: Field,
     path: string,
-    value: any,
-    soft: boolean = true,
-    bail: boolean = false
+    newState: Partial<FieldState>
   ): Promise<FieldState> => {
     const promises: Promise<ValidationResult>[] = [];
-    // if (cache.has(path)) {
-    const [store$, validators] = <Field>cache.get(path);
-    let state = get(store$);
 
+    let state = get(store$);
+    state = Object.assign(state, newState);
+    const { value } = state;
     if (validators.length === 0) {
       state = Object.assign(state, { errors: [], valid: true });
       store$.set(state);
@@ -488,30 +490,47 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
     }
 
     form$.update((v) => Object.assign(v, { pending: true, valid: false }));
-    store$.update((v: FieldState) =>
-      Object.assign(v, {
-        dirty: v.dirty ? true : soft ? false : true,
+    store$.set(
+      Object.assign(state, {
+        // dirty: v.dirty ? true : soft ? false : true,
         errors: [],
         pending: true,
         value,
       })
     );
 
-    for (let i = 0, len = validators.length; i < len; i++) {
+    const len = validators.length;
+    let i = 0;
+    for (i = 0; i < len; i++) {
       const { validate, params } = validators[i];
       promises.push(validate(value, params, context));
     }
 
     if (bail) {
-      return Promise.race(promises).then((result: ValidationResult) => {
-        let state = { pending: false };
-        if (typeof result === "string") {
-          state = Object.assign(state, { errors: [result], valid: false });
-        } else {
-          state = Object.assign(state, { errors: [], valid: true });
+      return new Promise(async (resolve) => {
+        for (i = 0; i < len; i++) {
+          const result = await promises[i];
+          if (typeof result === "string") {
+            store$.update((v: FieldState) =>
+              Object.assign(v, {
+                pending: false,
+                errors: [result],
+                valid: false,
+              })
+            );
+            resolve(<FieldState>get(store$));
+            return;
+          }
         }
-        store$.update((v: FieldState) => Object.assign(v, state));
-        return Promise.resolve(<FieldState>get(store$));
+
+        store$.update((v: FieldState) =>
+          Object.assign(v, {
+            pending: false,
+            errors: [],
+            valid: true,
+          })
+        );
+        resolve(<FieldState>get(store$));
       });
     }
 
@@ -519,15 +538,14 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
       const errors = <string[]>(
         result.filter((v: ValidationResult) => v !== true)
       );
+
       const valid = errors.length === 0;
       store$.update((v: FieldState) =>
         Object.assign(v, { pending: false, errors, valid })
       );
-      // setError(path, errors);
 
       return Promise.resolve(<FieldState>get(store$));
     });
-    // }
   };
 
   const validate = (paths: string | string[] = Array.from(cache.keys())) => {
@@ -537,9 +555,9 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
     let data = {};
     for (let i = 0, len = paths.length; i < len; i++) {
       if (!cache.has(paths[i])) continue;
-      const [store$] = <Field>cache.get(paths[i]);
-      const state = get(store$);
-      promises.push(_validate(paths[i], state.value));
+      const field = <Field>cache.get(paths[i]);
+      const state = get(field[0]);
+      promises.push(_validate(field, paths[i], state.value));
       _normalizeObject(data, paths[i], state.value);
     }
 

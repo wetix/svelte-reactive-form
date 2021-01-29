@@ -43,7 +43,7 @@
 <Field
   {control}
   name="name"
-  validateOnMount={true}
+  bail={true}
   rules={["required", asyncPromise, "minLength:6"]}
   let:onChange
   let:value
@@ -131,7 +131,7 @@
   let:errors
 >
   <select on:change={onChange} on:focus={onFocus} on:blur={onBlur}>
-    {#each ["option-a", "option-b", "option-c", "option-d"] as item}
+    {#each ["option-a", "option-b", "option-c", "symbol-,@", "invalid"] as item}
       <option value={item} selected={item === value}>{item}</option>
     {/each}
   </select>
