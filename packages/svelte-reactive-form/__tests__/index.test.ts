@@ -1,7 +1,7 @@
 import { render, fireEvent, screen } from "@testing-library/svelte";
 
 import App from "./App.svelte";
-import type { FieldState } from "../types";
+import type { FieldState } from "../types/types";
 import { tick } from "svelte";
 // import "@testing-library/jest-dom/extend-expect";
 // import { render, fireEvent } from "@testing-library/svelte";

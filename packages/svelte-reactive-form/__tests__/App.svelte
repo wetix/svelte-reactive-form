@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { useForm, Field, defineRule } from "..";
-  import { required } from "../../../rules/src";
+  import { useForm, Field, defineRule } from "../src";
+  import { required } from "../../rules/src";
 
   defineRule("required", required);
 
