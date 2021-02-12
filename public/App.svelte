@@ -12,6 +12,7 @@
   import DefaultValuesForm from "./DefaultValuesForm.svelte";
   import ConditionalForm from "./ConditionalForm.svelte";
   import FormC from "./FormC.svelte";
+  import FormD from "./FormD.svelte";
   import DynamicForm from "./DynamicForm.svelte";
   import DynamicValidator from "./DynamicValidator.svelte";
   import Form from "./Form.svelte";
@@ -99,6 +100,10 @@
     {
       name: "Form B",
       component: FormB,
+    },
+    {
+      name: "Form D",
+      component: FormD,
     },
     {
       name: "Conditional Form",

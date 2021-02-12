@@ -19,7 +19,6 @@ import type {
   NodeElement,
   RegisterOption,
   ErrorCallback,
-  FieldStateStore,
 } from "./types";
 
 const defaultFormState = {
@@ -53,9 +52,9 @@ const _normalizeObject = (
     [data, escape ? [escape[1]] : name.split(".")],
   ];
   while (queue.length > 0) {
-    const first = <[Record<string, any>, string[]]>queue.shift();
+    const first = queue.shift()!;
     const paths = first[1];
-    const name = <string>paths.shift();
+    const name = paths.shift()!;
     const result = name.match(/^([a-z\_\.]+)((\[\d+\])+)/i);
 
     if (result && result.length > 2) {
@@ -67,7 +66,7 @@ const _normalizeObject = (
       let cur = first[0][name];
       const indexs = result[2].replace(/^\[+|\]+$/g, "").split("][");
       while (indexs.length > 0) {
-        const index = parseInt(<string>indexs.shift(), 10);
+        const index = parseInt(indexs.shift()!, 10);
         // if nested index is last position && parent is last position
         if (indexs.length === 0) {
           if (paths.length === 0) {
@@ -106,7 +105,7 @@ const _normalizeObject = (
 
 const _strToValidator = (rule: string): ValidationRule => {
   const params = rule.split(/:/g);
-  const name = <string>params.shift();
+  const name = params.shift()!;
   if (!resolveRule(name))
     console.error(
       `[svelte-reactive-form] invalid validation function "${name}"`
@@ -151,6 +150,12 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
     );
 
     let unsubscribe: null | Function;
+
+    const unsubscribeStore = () => {
+      unsubscribe && unsubscribe();
+      unsubscribe = null;
+    };
+
     return {
       set,
       update,
@@ -161,18 +166,14 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
         anyNonTouched.delete(path);
         anyPending.delete(path);
         _updateForm();
-        unsubscribe && unsubscribe();
+        unsubscribeStore();
       },
       subscribe(
         run: (value: FieldState) => void,
         invalidate?: (value?: FieldState) => void
       ) {
         unsubscribe = subscribe(run, invalidate);
-        return () => {
-          // prevent memory leak
-          unsubscribe && unsubscribe();
-          unsubscribe = null;
-        };
+        return unsubscribeStore;
       },
     };
   };
@@ -203,7 +204,7 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
         const typeOfVal = typeof rule;
         if (!rule) return acc; // skip null, undefined etc
         if (typeOfVal === "string") {
-          rule = <string>rule.trim();
+          rule = rule.trim()!;
           rule && acc.push(_strToValidator(rule));
         } else if (typeOfVal === "function") {
           rule = rule as Function;
@@ -268,13 +269,13 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
   const unregister = (path: string) => {
     if (cache.has(path)) {
       // clear subscriptions and cache
-      (<Field>cache.get(path))[0].destroy();
+      cache.get(path)![0].destroy();
     }
   };
 
   const setValue = <T>(path: string, value: T): void => {
     if (cache.has(path)) {
-      const field = <Field>cache.get(path);
+      const field = cache.get(path)!;
       if (config.validateOnChange) {
         _validate(field, path, { dirty: true, value });
       } else {
@@ -287,7 +288,7 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
 
   const setError = (path: string, errors: string[]): void => {
     if (cache.has(path)) {
-      const [store$] = <Field>cache.get(path);
+      const [store$] = cache.get(path)!;
       store$.update((v: FieldState) => Object.assign(v, { errors }));
     } else {
       _setStore(path, { errors });
@@ -296,15 +297,14 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
 
   const setTouched = (path: string, touched: boolean): void => {
     if (cache.has(path)) {
-      const field = <Field>cache.get(path);
-      const state = get(field[0]);
+      const field = cache.get(path)!;
       _validate(field, path, { touched });
     }
   };
 
   const getValue = <T>(path: string): T | null => {
     if (cache.has(path)) {
-      const [store$] = <Field>cache.get(path);
+      const [store$] = cache.get(path)!;
       const state = get<FieldState>(store$);
       return <T>state.value;
     }
@@ -358,7 +358,7 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
     }
 
     if (option.validateOnMount) {
-      const field = <Field>cache.get(name);
+      const field = cache.get(name)!;
       _validate(field, name, { value: defaultValue });
     }
 
@@ -367,7 +367,7 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
       unsubscribe = state$.subscribe((v: FieldState) => {
         (<(state: FieldState, node: Element) => void>option.handleChange)(
           v,
-          <Element>node
+          node
         );
       });
     }
@@ -555,7 +555,7 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
     let data = {};
     for (let i = 0, len = paths.length; i < len; i++) {
       if (!cache.has(paths[i])) continue;
-      const field = <Field>cache.get(paths[i]);
+      const field = cache.get(paths[i])!;
       const state = get(field[0]);
       promises.push(_validate(field, paths[i], state.value));
       _normalizeObject(data, paths[i], state.value);
