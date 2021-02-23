@@ -11,6 +11,8 @@
 [![Bundle Size](https://badgen.net/bundlephobia/minzip/svelte-reactive-form)](https://bundlephobia.com/result?p=svelte-reactive-form)
 [![LICENCE](https://img.shields.io/github/license/wetix/svelte-reactive-form)](https://github.com/wetix/svelte-reactive-form/blob/master/LICENSE)
 
+[![NPM Stat](https://nodei.co/npm/svelte-reactive-form.png)](https://www.npmjs.com/package/svelte-reactive-form)
+
 </p>
 
 ## Installation and Usage
