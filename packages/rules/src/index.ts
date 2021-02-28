@@ -23,21 +23,19 @@ export const required = (v: any): ValidationResult => {
 // };
 
 export const alphaNum = (v: string): ValidationResult => {
-  return /^[a-z0-9]+$/i.test(v) ? true : "The field is not alphanumeric.";
+  return /^[a-z0-9]+$/i.test(v) || "The field is not alphanumeric.";
 };
 
 export const between = (v: any, [min, max]: string[]): ValidationResult => {
-  return v > min && v < max
-    ? true
-    : `The field is not between ${min} and ${max}.`;
+  return (v > min && v < max) || `The field is not between ${min} and ${max}.`;
 };
 
 export const url = (v: string): ValidationResult => {
-  return /(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/.test(
-    v
-  )
-    ? true
-    : "This field is not url.";
+  return (
+    /(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/.test(
+      v
+    ) || "This field is not url."
+  );
 };
 
 export const unique = <T>(v: T[]): ValidationResult => {
@@ -65,9 +63,10 @@ export const email = (v: string): ValidationResult =>
   ) || "This field must be a valid email.";
 
 export const contains = <T>(v: T, list: T[]): ValidationResult => {
-  return list.includes(v)
-    ? true
-    : `This field doesn't have valid value (such as ${list.join(", ")})`;
+  return (
+    list.includes(v) ||
+    `This field doesn't have valid value (such as ${list.join(", ")})`
+  );
 };
 
 export const minLength = (val: any, [min]: [number]): ValidationResult => {
@@ -99,5 +98,5 @@ export const min = (v: any, [len]: [string]): ValidationResult => {
 };
 
 export const integer = (v: string): ValidationResult => {
-  return /^\d+$/.test(v) ? true : "The field is not an integer";
+  return /^\d+$/.test(v) || "The field is not an integer";
 };
