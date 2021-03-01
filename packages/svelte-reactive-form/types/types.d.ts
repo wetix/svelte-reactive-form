@@ -11,7 +11,9 @@ export declare type Config = {
 export declare type SuccessCallback = (data: Record<string, any>, e: Event) => any;
 export declare type ErrorCallback = (errors: Record<string, any>, e: Event) => any;
 export declare type NodeElement = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
-export declare type ValidationResult = boolean | string;
+declare type Success = true;
+declare type Error = string;
+export declare type ValidationResult = Success | Error;
 export declare type ValidationFunction = (...args: any[]) => ValidationResult | Promise<ValidationResult>;
 export declare type Validator = string | ValidationFunction;
 export declare type RuleExpression = string | Array<Validator> | Record<string, Validator> | Record<string, any>;

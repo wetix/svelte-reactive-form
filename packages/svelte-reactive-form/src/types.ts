@@ -26,7 +26,9 @@ export type NodeElement =
   | HTMLSelectElement
   | HTMLTextAreaElement;
 
-export type ValidationResult = boolean | string;
+type Success = true;
+type Error = string;
+export type ValidationResult = Success | Error;
 
 export type ValidationFunction = (
   ...args: any[]

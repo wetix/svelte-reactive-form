@@ -112,7 +112,7 @@ const _strToValidator = (rule: string): ValidationRule => {
     );
   return {
     name,
-    validate: toPromise<boolean | string>(resolveRule(name)),
+    validate: toPromise(resolveRule(name)),
     params: params[0]
       ? params[0].split(",").map((v) => decodeURIComponent(v))
       : [],
@@ -214,7 +214,7 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
             );
           acc.push({
             name: rule.name,
-            validate: toPromise<boolean | string>(<Function>rule),
+            validate: toPromise(<Function>rule),
             params: [],
           });
         }
@@ -226,7 +226,7 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
           const [name, params] = cur;
           acc.push({
             name,
-            validate: toPromise<boolean | string>(resolveRule(name)),
+            validate: toPromise(resolveRule(name)),
             params: Array.isArray(params) ? params : [params],
           });
           return acc;
