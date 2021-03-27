@@ -1,4 +1,4 @@
-import type { FormControl, ValidationResult } from "../../svelte-reactive-form/src/types";
+import type { FormControl, ValidationResult } from "svelte-reactive-form/src/types";
 export declare const required: (v: any) => ValidationResult;
 export declare const alphaNum: (v: string) => ValidationResult;
 export declare const between: (v: any, [min, max]: string[]) => ValidationResult;

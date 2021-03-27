@@ -1,7 +1,7 @@
 import type {
   FormControl,
   ValidationResult,
-} from "../../svelte-reactive-form/src/types";
+} from "svelte-reactive-form/src/types";
 
 export const required = (v: any): ValidationResult => {
   if (v === undefined) return "This field is required.";

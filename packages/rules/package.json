@@ -17,6 +17,9 @@
     "lib": "lib",
     "test": "__tests__"
   },
+  "peerDependencies": {
+    "svelte-reactive-form": "*"
+  },
   "files": [
     "src",
     "lib",
