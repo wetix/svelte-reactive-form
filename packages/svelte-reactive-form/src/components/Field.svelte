@@ -64,17 +64,15 @@
   });
 </script>
 
-<div>
-  <input {name} {type} on:input value={$state$.value} />
-  <slot
-    pending={$state$.pending}
-    valid={$state$.valid}
-    errors={$state$.errors}
-    dirty={$state$.dirty}
-    touched={$state$.touched}
-    value={$state$.value}
-    {onChange}
-    {onFocus}
-    {onBlur}
-  />
-</div>
+<input {name} {type} on:input value={$state$.value} />
+<slot
+  pending={$state$.pending}
+  valid={$state$.valid}
+  errors={$state$.errors}
+  dirty={$state$.dirty}
+  touched={$state$.touched}
+  value={$state$.value}
+  {onChange}
+  {onFocus}
+  {onBlur}
+/>
