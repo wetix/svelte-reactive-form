@@ -17,13 +17,13 @@
 
 ## Installation and Usage
 
-```bash
+```console
 npm install svelte-reactive-form
 ```
 
 or
 
-```bash
+```console
 yarn add svelte-reactive-form
 ```
 
@@ -53,7 +53,7 @@ yarn add svelte-reactive-form
   });
 
   // initialize the form instance
-  const form$ = useForm();
+  const form$ = useForm<{ name: string; pin: string; description: string }>();
   const { field, register, setValue, control, onSubmit } = form$;
 
   // you can register your field manually
@@ -62,16 +62,16 @@ yarn add svelte-reactive-form
     rules: ["required", "minLength:4", "numeric"]
   });
 
-  const successCallback = (v) => {
-    console.log(v);
-  }
-
-  const failedCallback = (v) => {
-    console.log(v);
-  }
+  const submitCallback = onSubmit((data, e) => {
+    console.log("Data =>", data);
+    console.log("Event =>", e);
+  }, (err, e) => {
+    console.log("Error =>", err);
+    console.log("Event =>", e);
+  });
 </script>
 
-<form on:submit={onSubmit(successCallback, failedCallback)}>
+<form on:submit={submitCallback}>
   <Field {control} name="name" rules="required" let:errors let:onChange>
     <Component {onChange} />
     {#each errors as item}
