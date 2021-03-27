@@ -8,7 +8,6 @@ export declare type Config = {
     resolver?: Resolver;
     validateOnChange?: boolean;
 };
-export declare type SuccessCallback = (data: Record<string, any>, e: Event) => any;
 export declare type ErrorCallback = (errors: Record<string, any>, e: Event) => any;
 export declare type NodeElement = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
 declare type Success = true;
@@ -46,15 +45,15 @@ declare type UseField = (node: HTMLElement, option?: FieldOption) => {
     update(v: FieldOption): void;
     destroy(): void;
 };
-export interface Form extends Readable<FormState>, FormControl {
+export interface Form<T> extends Readable<FormState>, FormControl {
     control: Readable<FormControl>;
     field: UseField;
     errors: FieldErrors;
     validate: (paths?: string | Array<string>) => Promise<{
         valid: boolean;
-        data: object;
+        data: T;
     }>;
-    onSubmit: (success: SuccessCallback, error?: ErrorCallback) => (e: Event) => void;
+    onSubmit: (success: (data: T, e: Event) => void, error?: ErrorCallback) => (e: Event) => void;
 }
 export declare type FormState = {
     pending: boolean;

@@ -13,12 +13,6 @@ export type Config = {
   validateOnChange?: boolean;
 };
 
-export type SuccessCallback = (
-  data: Record<string, any>,
-  // errors: { [key: string]: string | boolean },
-  e: Event
-) => any;
-
 export type ErrorCallback = (errors: Record<string, any>, e: Event) => any;
 
 export type NodeElement =
@@ -78,15 +72,15 @@ type UseField = (
   option?: FieldOption
 ) => { update(v: FieldOption): void; destroy(): void };
 
-export interface Form extends Readable<FormState>, FormControl {
+export interface Form<T> extends Readable<FormState>, FormControl {
   control: Readable<FormControl>;
   field: UseField;
   errors: FieldErrors;
   validate: (
     paths?: string | Array<string>
-  ) => Promise<{ valid: boolean; data: object }>;
+  ) => Promise<{ valid: boolean; data: T }>;
   onSubmit: (
-    success: SuccessCallback,
+    success: (data: T, e: Event) => void,
     error?: ErrorCallback
   ) => (e: Event) => void;
 }

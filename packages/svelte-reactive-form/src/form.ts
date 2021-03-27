@@ -8,7 +8,6 @@ import type {
   FieldState,
   FieldOption,
   ValidationRule,
-  SuccessCallback,
   FormState,
   ValidationResult,
   ResetFormOption,
@@ -119,7 +118,9 @@ const _strToValidator = (rule: string): ValidationRule => {
   };
 };
 
-export const useForm = (config: Config = { validateOnChange: true }): Form => {
+export const useForm = <F>(
+  config: Config = { validateOnChange: true }
+): Form<F> => {
   // cache for form fields
   const cache: Map<string, Field> = new Map();
 
@@ -418,7 +419,7 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
   };
 
   const onSubmit = (
-    successCallback: SuccessCallback,
+    successCallback: (data: F, e: Event) => void,
     errorCallback?: ErrorCallback
   ) => async (e: Event) => {
     form$.update((v) => Object.assign(v, { submitting: true }));
@@ -464,7 +465,7 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
     }
 
     if (valid) {
-      await toPromise<void>(successCallback)(data, e);
+      await toPromise<void>(successCallback)(<F>data, e);
     } else {
       errorCallback && errorCallback(get(errors$), e);
     }
@@ -564,7 +565,7 @@ export const useForm = (config: Config = { validateOnChange: true }): Form => {
     return Promise.all(promises).then((result: FieldState[]) => {
       return {
         valid: result.every((state) => state.valid),
-        data,
+        data: data as F,
       };
     });
   };
