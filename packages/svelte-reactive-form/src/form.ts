@@ -6,6 +6,7 @@ import toPromise from "./to_promise";
 import type {
   Config,
   FieldState,
+  FieldStateStore,
   FieldOption,
   ValidationRule,
   FormState,
@@ -38,9 +39,47 @@ const defaultFieldState = {
   errors: [],
 };
 
+class FieldData {
+  // name: string;
+  store: FieldStateStore;
+  validators: ValidationRule[];
+  timeout?: NodeJS.Timeout;
+  bail: boolean = false;
+  constructor(store: FieldStateStore, validators: ValidationRule[]) {
+    this.store = store;
+    this.validators = validators;
+  }
+
+  destroy() {
+    this.store.destroy();
+    this.validators = [];
+  }
+}
+
 const fields = ["INPUT", "SELECT", "TEXTAREA"];
 
-// TODO: test case for _normalizeObject
+const _debouncePromise = <T>(
+  cb: Function,
+  ms = 0
+): ((...args: any[]) => Promise<T>) => {
+  let timer: NodeJS.Timeout;
+  let resolves: any[] = [];
+
+  return (...args: any[]) => {
+    // Run the function after a certain amount of time
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      // Get the result of the inner function, then apply it to the resolve function of
+      // each promise that has been created since the last time the inner function was run
+      const result = cb(...args);
+      resolves.forEach((r) => r(result));
+      resolves = [];
+    }, ms);
+
+    return new Promise((r) => resolves.push(r));
+  };
+};
+
 const _normalizeObject = (
   data: Record<string, any>,
   name: string,
@@ -122,7 +161,7 @@ export const useForm = <F>(
   config: Config = { validateOnChange: true }
 ): Form<F> => {
   // cache for form fields
-  const cache: Map<string, Field> = new Map();
+  const cache: Map<string, FieldData> = new Map();
 
   // global state for form
   const form$ = writable<FormState>(Object.assign({}, defaultFormState));
@@ -181,17 +220,18 @@ export const useForm = <F>(
 
   const _setStore = (path: string, state: Partial<FieldState> = {}) => {
     const store$ = _useLocalStore(path, state);
-    cache.set(path, [store$, [], { bail: false }]);
+    // cache.set(path, [store$, [], { bail: false }]);
   };
 
   const register = <T>(
-    path: string,
+    name: string,
     option: RegisterOption<T> = {}
   ): Readable<FieldState> => {
     const value = option.defaultValue || "";
-    const store$ = _useLocalStore(path, { value });
+    const store$ = _useLocalStore(name, { value });
 
-    if (path === "") console.error("[svelte-reactive-form] missing field name");
+    if (name === "")
+      throw new Error("[svelte-reactive-form] missing field name");
 
     let ruleExprs: ValidationRule[] = [];
     const { bail = false, rules = [] } = option;
@@ -240,24 +280,27 @@ export const useForm = <F>(
       );
     }
 
-    const field: Field = [store$, ruleExprs, { bail }];
-    cache.set(path, field);
+    console.log("HERE!!", name);
+    // FIXME: field
+    // const field: Field = [store$, ruleExprs, { bail }];
+    const field = new FieldData(store$, ruleExprs);
+    cache.set(name, field);
 
-    if (option.validateOnMount) {
-      _validate(field, path, {});
-    }
+    // if (option.validateOnMount) {
+    //   _validate(field, path, {});
+    // }
 
     if (config.validateOnChange) {
       // on every state change, it will update the form
       store$.subscribe((state) => {
-        if (state.valid) anyInvalid.delete(path);
-        else if (!state.valid) anyInvalid.set(path, true);
-        if (state.dirty) anyNonDirty.delete(path);
-        else if (!state.dirty) anyNonDirty.set(path, true);
-        if (!state.pending) anyPending.delete(path);
-        else if (state.pending) anyPending.set(path, true);
-        if (state.touched) anyNonTouched.delete(path);
-        else if (!state.touched) anyNonTouched.set(path, true);
+        if (state.valid) anyInvalid.delete(name);
+        else if (!state.valid) anyInvalid.set(name, true);
+        if (state.dirty) anyNonDirty.delete(name);
+        else if (!state.dirty) anyNonDirty.set(name, true);
+        if (!state.pending) anyPending.delete(name);
+        else if (state.pending) anyPending.set(name, true);
+        if (state.touched) anyNonTouched.delete(name);
+        else if (!state.touched) anyNonTouched.set(name, true);
         _updateForm();
       });
     }
@@ -267,46 +310,50 @@ export const useForm = <F>(
     };
   };
 
-  const unregister = (path: string) => {
-    if (cache.has(path)) {
+  const unregister = (name: string) => {
+    if (cache.has(name)) {
       // clear subscriptions and cache
-      cache.get(path)![0].destroy();
+      // FIXME:
+      // cache.get(name)!.destroy();
     }
   };
 
-  const setValue = <T>(path: string, value: T): void => {
-    if (cache.has(path)) {
-      const field = cache.get(path)!;
+  const setValue = <T>(name: string, value: T): void => {
+    if (cache.has(name)) {
+      const { store } = cache.get(name)!;
+      console.log("Value =>", value);
       if (config.validateOnChange) {
-        _validate(field, path, { dirty: true, value });
+        // FIXME:
+        // _validate(field, path, { dirty: true, value });
       } else {
-        field[0].update((v) => Object.assign(v, { dirty: true, value }));
+        store.update((v) => Object.assign(v, { dirty: true, value }));
       }
     } else {
-      _setStore(path);
+      _setStore(name);
     }
   };
 
-  const setError = (path: string, errors: string[]): void => {
-    if (cache.has(path)) {
-      const [store$] = cache.get(path)!;
-      store$.update((v: FieldState) => Object.assign(v, { errors }));
+  const setError = (name: string, errors: string[]): void => {
+    if (cache.has(name)) {
+      const { store } = cache.get(name)!;
+      store.update((v: FieldState) => Object.assign(v, { errors }));
     } else {
-      _setStore(path, { errors });
+      _setStore(name, { errors });
     }
   };
 
-  const setTouched = (path: string, touched: boolean): void => {
-    if (cache.has(path)) {
-      const field = cache.get(path)!;
-      _validate(field, path, { touched });
+  const setTouched = (name: string, touched: boolean): void => {
+    if (cache.has(name)) {
+      // FIXME:
+      // const field = cache.get(name)!;
+      // _validate(field, name, { touched });
     }
   };
 
   const getValue = <T>(path: string): T | null => {
     if (cache.has(path)) {
-      const [store$] = cache.get(path)!;
-      const state = get<FieldState>(store$);
+      const { store } = cache.get(path)!;
+      const state = get<FieldState>(store);
       return <T>state.value;
     }
     return null;
@@ -359,8 +406,9 @@ export const useForm = <F>(
     }
 
     if (option.validateOnMount) {
-      const field = cache.get(name)!;
-      _validate(field, name, { value: defaultValue });
+      // FIXME:
+      // const field = cache.get(name)!;
+      // _validate(field, name, { value: defaultValue });
     }
 
     let unsubscribe: null | Function;
@@ -393,8 +441,8 @@ export const useForm = <F>(
     }
     const fields = Array.from(cache.values());
     for (let i = 0, len = fields.length; i < len; i++) {
-      const [store$] = fields[i];
-      store$.update((v) => {
+      const { store } = fields[i];
+      store.update((v) => {
         const { defaultValue } = v;
         return Object.assign({}, defaultFieldState, {
           defaultValue,
@@ -418,135 +466,142 @@ export const useForm = <F>(
     };
   };
 
-  const onSubmit = (
-    successCallback: (data: F, e: Event) => void,
-    errorCallback?: ErrorCallback
-  ) => async (e: Event) => {
-    form$.update((v) => Object.assign(v, { submitting: true }));
-    e.preventDefault();
-    e.stopPropagation();
-    errors$.set({}); // reset errors
-    let data = {},
-      valid = true;
-    const { elements = [] } = <HTMLFormElement>e.currentTarget;
-    for (let i = 0, len = elements.length; i < len; i++) {
-      const el = <HTMLInputElement>elements[i];
-      const name = el.name || el.id;
-      let value = el.value || "";
-      if (!name) continue;
-      if (config.resolver) {
-        data = _normalizeObject(data, name, value);
-        continue;
-      }
-      // TODO: shouldn't only loop elements, should check cache keys which not exists in elements as well
-      if (cache.has(name)) {
-        const field = <Field>cache.get(name);
-        // TODO: check checkbox and radio
-        const { nodeName, type } = el;
-        switch (type) {
-          case "checkbox":
-            value = el.checked ? value : "";
-            break;
+  const onSubmit =
+    (
+      successCallback: (data: F, e: Event) => void,
+      errorCallback?: ErrorCallback
+    ) =>
+    async (e: Event) => {
+      form$.update((v) => Object.assign(v, { submitting: true }));
+      e.preventDefault();
+      e.stopPropagation();
+      errors$.set({}); // reset errors
+      let data = {},
+        valid = true;
+      const { elements = [] } = <HTMLFormElement>e.currentTarget;
+      for (let i = 0, len = elements.length; i < len; i++) {
+        const el = <HTMLInputElement>elements[i];
+        const name = el.name || el.id;
+        let value = el.value || "";
+        if (!name) continue;
+        if (config.resolver) {
+          data = _normalizeObject(data, name, value);
+          continue;
         }
+        // TODO: shouldn't only loop elements, should check cache keys which not exists in elements as well
+        if (cache.has(name)) {
+          const field = <FieldData>cache.get(name);
+          // TODO: check checkbox and radio
+          const { nodeName, type } = el;
+          switch (type) {
+            case "checkbox":
+              value = el.checked ? value : "";
+              break;
+          }
 
-        const result = await _validate(field, name, { value });
-        valid = valid && result.valid; // update valid
-        data = _normalizeObject(data, name, value);
+          // FIXME:
+          // const result = await _validate(field, name, { value });
+          // valid = valid && result.valid; // update valid
+          data = _normalizeObject(data, name, value);
+        }
       }
-    }
 
-    if (config.resolver) {
-      try {
-        await config.resolver.validate(data);
-      } catch (e) {
-        valid = false;
-        errors$.set(<Record<string, any>>e);
+      if (config.resolver) {
+        try {
+          await config.resolver.validate(data);
+        } catch (e) {
+          valid = false;
+          errors$.set(<Record<string, any>>e);
+        }
       }
-    }
 
-    if (valid) {
-      await toPromise<void>(successCallback)(<F>data, e);
-    } else {
-      errorCallback && errorCallback(get(errors$), e);
-    }
+      if (valid) {
+        await toPromise<void>(successCallback)(<F>data, e);
+      } else {
+        errorCallback && errorCallback(get(errors$), e);
+      }
 
-    // submitting should end only after execute user callback
-    form$.update((v) => Object.assign(v, { valid, submitting: false }));
-  };
+      // submitting should end only after execute user callback
+      form$.update((v) => Object.assign(v, { valid, submitting: false }));
+    };
 
   const _validate = (
     [store$, validators, { bail }]: Field,
     path: string,
     newState: Partial<FieldState>
   ): Promise<FieldState> => {
-    const promises: Promise<ValidationResult>[] = [];
+    const cb = () => {
+      const promises: Promise<ValidationResult>[] = [];
 
-    let state = get(store$);
-    state = Object.assign(state, newState);
-    const { value } = state;
-    if (validators.length === 0) {
-      state = Object.assign(state, { errors: [], valid: true });
-      store$.set(state);
-      return Promise.resolve(state);
-    }
+      let state = get(store$);
+      state = Object.assign(state, newState);
+      const { value } = state;
+      if (validators.length === 0) {
+        state = Object.assign(state, { errors: [], valid: true });
+        store$.set(state);
+        return Promise.resolve(state);
+      }
 
-    form$.update((v) => Object.assign(v, { pending: true, valid: false }));
-    store$.set(
-      Object.assign(state, {
-        // dirty: v.dirty ? true : soft ? false : true,
-        errors: [],
-        pending: true,
-        value,
-      })
-    );
+      form$.update((v) => Object.assign(v, { pending: true, valid: false }));
+      store$.set(
+        Object.assign(state, {
+          // dirty: v.dirty ? true : soft ? false : true,
+          errors: [],
+          pending: true,
+          value,
+        })
+      );
 
-    const len = validators.length;
-    let i = 0;
-    for (i = 0; i < len; i++) {
-      const { validate, params } = validators[i];
-      promises.push(validate(value, params, context));
-    }
+      const len = validators.length;
+      let i = 0;
+      for (i = 0; i < len; i++) {
+        const { validate, params } = validators[i];
+        promises.push(validate(value, params, context));
+      }
 
-    if (bail) {
-      return new Promise(async (resolve) => {
-        for (i = 0; i < len; i++) {
-          const result = await promises[i];
-          if (typeof result === "string") {
-            store$.update((v: FieldState) =>
-              Object.assign(v, {
-                pending: false,
-                errors: [result],
-                valid: false,
-              })
-            );
-            resolve(<FieldState>get(store$));
-            return;
+      if (bail) {
+        return new Promise(async (resolve) => {
+          for (i = 0; i < len; i++) {
+            const result = await promises[i];
+            if (typeof result === "string") {
+              store$.update((v: FieldState) =>
+                Object.assign(v, {
+                  pending: false,
+                  errors: [result],
+                  valid: false,
+                })
+              );
+              resolve(<FieldState>get(store$));
+              return;
+            }
           }
-        }
 
-        store$.update((v: FieldState) =>
-          Object.assign(v, {
-            pending: false,
-            errors: [],
-            valid: true,
-          })
+          store$.update((v: FieldState) =>
+            Object.assign(v, {
+              pending: false,
+              errors: [],
+              valid: true,
+            })
+          );
+          resolve(<FieldState>get(store$));
+        });
+      }
+
+      return Promise.all(promises).then((result: ValidationResult[]) => {
+        const errors = <string[]>(
+          result.filter((v: ValidationResult) => v !== true)
         );
-        resolve(<FieldState>get(store$));
+
+        const valid = errors.length === 0;
+        store$.update((v: FieldState) =>
+          Object.assign(v, { pending: false, errors, valid })
+        );
+
+        return Promise.resolve(<FieldState>get(store$));
       });
-    }
-
-    return Promise.all(promises).then((result: ValidationResult[]) => {
-      const errors = <string[]>(
-        result.filter((v: ValidationResult) => v !== true)
-      );
-
-      const valid = errors.length === 0;
-      store$.update((v: FieldState) =>
-        Object.assign(v, { pending: false, errors, valid })
-      );
-
-      return Promise.resolve(<FieldState>get(store$));
-    });
+    };
+    const fn = _debouncePromise<FieldState>(cb, 100);
+    return fn();
   };
 
   const validate = (paths: string | string[] = Array.from(cache.keys())) => {
@@ -556,9 +611,9 @@ export const useForm = <F>(
     let data = {};
     for (let i = 0, len = paths.length; i < len; i++) {
       if (!cache.has(paths[i])) continue;
-      const field = cache.get(paths[i])!;
-      const state = get(field[0]);
-      promises.push(_validate(field, paths[i], state.value));
+      const { store } = cache.get(paths[i])!;
+      const state = get(store);
+      // promises.push(_validate(field, paths[i], state.value));
       _normalizeObject(data, paths[i], state.value);
     }
 
@@ -572,8 +627,8 @@ export const useForm = <F>(
 
   const getValues = () => {
     let data = {};
-    for (const [name, [store$]] of cache.entries()) {
-      const state = get(store$);
+    for (const [name, { store }] of cache.entries()) {
+      const state = get(store);
       _normalizeObject(data, name, state.value);
     }
     return data;

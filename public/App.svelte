@@ -29,6 +29,8 @@
     return /[0-9]+/.test(val) || "invalid phone number format";
   });
 
+  const url = new URL(window.location.href);
+
   let step = 0;
 
   const form$ = useForm({ validateOnChange: true });
@@ -55,6 +57,11 @@
     setValue("custom_field", customValue);
   };
 
+  const switchForm = (i: number) => () => {
+    selectedForm = i;
+    history.replaceState({}, "", `?form=${i}`);
+  };
+
   const formB$ = useForm({ validateOnChange: true });
   const customField$ = formB$.register("custom_field", {
     defaultValue: "Custom",
@@ -67,11 +74,6 @@
   };
 
   let rules = [required, asyncValidation, "minLength:6"];
-
-  const onInput = (e: Event) => {
-    console.log(formB$.getValue("custom_field"));
-    formB$.setValue("custom_field", (<HTMLInputElement>e.target).value);
-  };
 
   const array$ = register("array", {
     defaultValue: [1, 2, 3, 4, 5],
@@ -87,7 +89,10 @@
     form$.validate(["array", "name"]).then(console.log);
   };
 
-  let selectedForm = 0;
+  const { searchParams } = url;
+  let selectedForm: number = searchParams.has("form")
+    ? parseInt(searchParams.get("form")!, 10)
+    : 0;
   const forms = [
     {
       name: "Default Value Form",
@@ -118,12 +123,46 @@
       component: DynamicValidator,
     },
   ];
+
+  function debounce(inner: Function, ms = 0) {
+    let timer: NodeJS.Timeout;
+    let resolves: any[] = [];
+
+    return function (...args: any[]) {
+      // Run the function after a certain amount of time
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        // Get the result of the inner function, then apply it to the resolve function of
+        // each promise that has been created since the last time the inner function was run
+        let result = inner(...args);
+        resolves.forEach((r) => r(result));
+        resolves = [];
+      }, ms);
+
+      return new Promise((r) => resolves.push(r));
+    };
+  }
+
+  const onInput = (e: Event) => {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        console.log("ok");
+        resolve("ok");
+      }, 10);
+    });
+  };
+
+  const debounceInput = debounce(onInput, 100);
 </script>
 
+<p>TEST FORM</p>
+<input on:input={debounceInput} />
 <div>
   {#each forms as item, i}
-    <button type="button" on:click={() => (selectedForm = i)}
-      >{item.name}</button
+    <button
+      class:selected={i === selectedForm}
+      type="button"
+      on:click={switchForm(i)}>{item.name}</button
     >
   {/each}
 </div>
@@ -132,5 +171,9 @@
 <style>
   :global(.errors) {
     color: red;
+  }
+
+  .selected {
+    border: 1px solid green;
   }
 </style>
