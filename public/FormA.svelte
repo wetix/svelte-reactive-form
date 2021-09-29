@@ -1,15 +1,7 @@
 <script lang="ts">
   import { onDestroy } from "svelte";
-  import {
-    useForm,
-    Field,
-    defineRule,
-  } from "../packages/svelte-reactive-form/src";
-  import { required, minLength } from "../packages/rules/src";
+  import { useForm, Field } from "../packages/svelte-reactive-form/src";
   import Input from "./Input.svelte";
-
-  defineRule("required", required);
-  defineRule("minLength", minLength);
 
   const form$ = useForm<{ name: string; email: string }>();
   const { control } = form$;

@@ -43,20 +43,7 @@
     rules: ["required", "minLength:10"],
   });
 
-  const asyncValidation = () => {
-    return new Promise<boolean>((resolve) => {
-      setTimeout(() => {
-        resolve(true);
-      }, 1500);
-    });
-  };
-
   let ruleOption = 1;
-  let customValue = "default";
-  const setCustomValue = () => {
-    setValue("custom_field", customValue);
-  };
-
   const switchForm = (i: number) => () => {
     selectedForm = i;
     history.replaceState({}, "", `?form=${i}`);
@@ -68,26 +55,10 @@
     rules: ["required", "minLength:10"],
   });
 
-  const toggleRule = () => {
-    validate();
-    // rules = [asyncValidation, "minLength:20"];
-  };
-
-  let rules = [required, asyncValidation, "minLength:6"];
-
   const array$ = register("array", {
     defaultValue: [1, 2, 3, 4, 5],
     rules: ["required"],
   });
-  const onEnterInput = (e: Event) => {
-    const v = (<HTMLInputElement>e.target).value;
-    form$.setValue("array", v.split(",").filter(Boolean));
-    console.log($array$.value);
-  };
-
-  const onValidate = () => {
-    form$.validate(["array", "name"]).then(console.log);
-  };
 
   const { searchParams } = url;
   let selectedForm: number = searchParams.has("form")
@@ -129,6 +100,7 @@
     let resolves: any[] = [];
 
     return function (...args: any[]) {
+      console.log(timer);
       // Run the function after a certain amount of time
       clearTimeout(timer);
       timer = setTimeout(() => {
@@ -153,10 +125,14 @@
   };
 
   const debounceInput = debounce(onInput, 100);
+
+  const xxx = () => {
+    debounceInput();
+  };
 </script>
 
 <p>TEST FORM</p>
-<input on:input={debounceInput} />
+<input on:input={xxx} />
 <div>
   {#each forms as item, i}
     <button

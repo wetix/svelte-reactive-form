@@ -1,4 +1,4 @@
-import { writable, get, readable } from "svelte/store";
+import { writable, get, readable, derived } from "svelte/store";
 import type { Readable } from "svelte/store";
 
 import { resolveRule } from "./rule";
@@ -20,6 +20,7 @@ import type {
   RegisterOption,
   ErrorCallback,
 } from "./types";
+import { FieldData } from "./field";
 
 const defaultFormState = {
   dirty: false,
@@ -39,46 +40,7 @@ const defaultFieldState = {
   errors: [],
 };
 
-class FieldData {
-  // name: string;
-  store: FieldStateStore;
-  validators: ValidationRule[];
-  timeout?: NodeJS.Timeout;
-  bail: boolean = false;
-  constructor(store: FieldStateStore, validators: ValidationRule[]) {
-    this.store = store;
-    this.validators = validators;
-  }
-
-  destroy() {
-    this.store.destroy();
-    this.validators = [];
-  }
-}
-
 const fields = ["INPUT", "SELECT", "TEXTAREA"];
-
-const _debouncePromise = <T>(
-  cb: Function,
-  ms = 0
-): ((...args: any[]) => Promise<T>) => {
-  let timer: NodeJS.Timeout;
-  let resolves: any[] = [];
-
-  return (...args: any[]) => {
-    // Run the function after a certain amount of time
-    clearTimeout(timer);
-    timer = setTimeout(() => {
-      // Get the result of the inner function, then apply it to the resolve function of
-      // each promise that has been created since the last time the inner function was run
-      const result = cb(...args);
-      resolves.forEach((r) => r(result));
-      resolves = [];
-    }, ms);
-
-    return new Promise((r) => resolves.push(r));
-  };
-};
 
 const _normalizeObject = (
   data: Record<string, any>,
@@ -218,10 +180,10 @@ export const useForm = <F>(
     };
   };
 
-  const _setStore = (path: string, state: Partial<FieldState> = {}) => {
-    const store$ = _useLocalStore(path, state);
-    // cache.set(path, [store$, [], { bail: false }]);
-  };
+  // const _setStore = (path: string, state: Partial<FieldState> = {}) => {
+  //   const store$ = _useLocalStore(path, state);
+  //   // cache.set(path, [store$, [], { bail: false }]);
+  // };
 
   const register = <T>(
     name: string,
@@ -280,10 +242,7 @@ export const useForm = <F>(
       );
     }
 
-    console.log("HERE!!", name);
-    // FIXME: field
-    // const field: Field = [store$, ruleExprs, { bail }];
-    const field = new FieldData(store$, ruleExprs);
+    const field = new FieldData(name, store$, ruleExprs);
     cache.set(name, field);
 
     // if (option.validateOnMount) {
@@ -320,16 +279,12 @@ export const useForm = <F>(
 
   const setValue = <T>(name: string, value: T): void => {
     if (cache.has(name)) {
-      const { store } = cache.get(name)!;
-      console.log("Value =>", value);
+      const field = cache.get(name)!;
       if (config.validateOnChange) {
-        // FIXME:
-        // _validate(field, path, { dirty: true, value });
+        field.validate(context, { dirty: true, value });
       } else {
-        store.update((v) => Object.assign(v, { dirty: true, value }));
+        field.store.update((v) => Object.assign(v, { dirty: true, value }));
       }
-    } else {
-      _setStore(name);
     }
   };
 
@@ -337,8 +292,6 @@ export const useForm = <F>(
     if (cache.has(name)) {
       const { store } = cache.get(name)!;
       store.update((v: FieldState) => Object.assign(v, { errors }));
-    } else {
-      _setStore(name, { errors });
     }
   };
 
@@ -372,10 +325,10 @@ export const useForm = <F>(
 
     const { defaultValue, rules } = option;
     const state$ = register(name, { defaultValue, rules });
-    const onChange = (e: Event) => {
+    const _onChange = (e: Event) => {
       setValue(name, (<HTMLInputElement>e.currentTarget).value);
     };
-    const onBlur = (_: Event) => {
+    const _onBlur = (_: Event) => {
       setTouched(name, true);
     };
 
@@ -399,10 +352,10 @@ export const useForm = <F>(
       }
     };
 
-    _attachEvent("blur", onBlur, { once: true });
+    _attachEvent("blur", _onBlur, { once: true });
     if (config.validateOnChange) {
-      _attachEvent("input", onChange);
-      _attachEvent("change", onChange);
+      _attachEvent("input", _onChange);
+      _attachEvent("change", _onChange);
     }
 
     if (option.validateOnMount) {
@@ -525,85 +478,6 @@ export const useForm = <F>(
       form$.update((v) => Object.assign(v, { valid, submitting: false }));
     };
 
-  const _validate = (
-    [store$, validators, { bail }]: Field,
-    path: string,
-    newState: Partial<FieldState>
-  ): Promise<FieldState> => {
-    const cb = () => {
-      const promises: Promise<ValidationResult>[] = [];
-
-      let state = get(store$);
-      state = Object.assign(state, newState);
-      const { value } = state;
-      if (validators.length === 0) {
-        state = Object.assign(state, { errors: [], valid: true });
-        store$.set(state);
-        return Promise.resolve(state);
-      }
-
-      form$.update((v) => Object.assign(v, { pending: true, valid: false }));
-      store$.set(
-        Object.assign(state, {
-          // dirty: v.dirty ? true : soft ? false : true,
-          errors: [],
-          pending: true,
-          value,
-        })
-      );
-
-      const len = validators.length;
-      let i = 0;
-      for (i = 0; i < len; i++) {
-        const { validate, params } = validators[i];
-        promises.push(validate(value, params, context));
-      }
-
-      if (bail) {
-        return new Promise(async (resolve) => {
-          for (i = 0; i < len; i++) {
-            const result = await promises[i];
-            if (typeof result === "string") {
-              store$.update((v: FieldState) =>
-                Object.assign(v, {
-                  pending: false,
-                  errors: [result],
-                  valid: false,
-                })
-              );
-              resolve(<FieldState>get(store$));
-              return;
-            }
-          }
-
-          store$.update((v: FieldState) =>
-            Object.assign(v, {
-              pending: false,
-              errors: [],
-              valid: true,
-            })
-          );
-          resolve(<FieldState>get(store$));
-        });
-      }
-
-      return Promise.all(promises).then((result: ValidationResult[]) => {
-        const errors = <string[]>(
-          result.filter((v: ValidationResult) => v !== true)
-        );
-
-        const valid = errors.length === 0;
-        store$.update((v: FieldState) =>
-          Object.assign(v, { pending: false, errors, valid })
-        );
-
-        return Promise.resolve(<FieldState>get(store$));
-      });
-    };
-    const fn = _debouncePromise<FieldState>(cb, 100);
-    return fn();
-  };
-
   const validate = (paths: string | string[] = Array.from(cache.keys())) => {
     if (!Array.isArray(paths)) paths = [paths];
     const promises: Promise<FieldState>[] = [];
@@ -634,6 +508,10 @@ export const useForm = <F>(
     return data;
   };
 
+  const watch = <T>(name: string) => {
+    return derived(cache.get(name)!.store, (v: FieldState) => v.value as T);
+  };
+
   const context = {
     register,
     unregister,
@@ -643,6 +521,7 @@ export const useForm = <F>(
     setTouched,
     getValues,
     reset,
+    watch,
   };
 
   return {
@@ -672,5 +551,6 @@ export const useForm = <F>(
     onSubmit,
     reset,
     validate,
+    watch,
   };
 };

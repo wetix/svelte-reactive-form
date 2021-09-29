@@ -1,4 +1,5 @@
 import type { Readable, Writable } from "svelte/store";
+import type { FieldData } from "./field";
 
 export type Fields = Record<string, any>;
 
@@ -53,15 +54,16 @@ export type FieldOption = {
 
 export interface FormControl {
   register: <T>(
-    path: string,
+    name: string,
     option?: RegisterOption<T>
   ) => Readable<FieldState>;
-  unregister: (path: string) => void;
-  setValue: (path: string, value: any) => void;
-  getValue: (path: string) => any;
+  watch: <T>(name: string) => Readable<T>;
+  unregister: (name: string) => void;
+  setValue: (name: string, value: any) => void;
+  getValue: (name: string) => any;
   getValues: () => Record<string, any>;
-  setError: (path: string, values: string[]) => void;
-  setTouched: (path: string, state: boolean) => void;
+  setError: (name: string, values: string[]) => void;
+  setTouched: (name: string, state: boolean) => void;
   reset: (values?: Fields) => void;
 }
 
@@ -77,7 +79,7 @@ export interface Form<T> extends Readable<FormState>, FormControl {
   field: UseField;
   errors: FieldErrors;
   validate: (
-    paths?: string | Array<string>
+    names?: string | Array<string>
   ) => Promise<{ valid: boolean; data: T }>;
   onSubmit: (
     success: (data: T, e: Event) => void,

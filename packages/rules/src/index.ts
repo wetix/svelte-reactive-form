@@ -49,11 +49,11 @@ export const unique = <T>(v: T[]): ValidationResult => {
 
 export const same = (
   v: any,
-  [field]: string[],
+  [name]: string[],
   ctx: FormControl
 ): ValidationResult => {
-  return v !== ctx.getValue(field)
-    ? `The field must have the same vaue as ${field} `
+  return v !== ctx.getValue(name)
+    ? `The field must have the same vaue as ${name}`
     : true;
 };
 

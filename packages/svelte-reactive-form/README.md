@@ -6,10 +6,10 @@
 
 [![Svelte v3](https://img.shields.io/badge/svelte-v3-orange.svg)](https://svelte.dev)
 [![npm](https://img.shields.io/npm/v/svelte-reactive-form.svg)](https://www.npmjs.com/package/svelte-reactive-form)
-[![Build Status](https://github.com/wetix/svelte-reactive-form/workflows/ci/badge.svg?branch=master)](https://github.com/wetix/svelte-reactive-form)
+[![Build Status](https://github.com/wetix/svelte-reactive-form/workflows/ci/badge.svg?branch=main)](https://github.com/wetix/svelte-reactive-form)
 [![download](https://img.shields.io/npm/dw/svelte-reactive-form.svg)](https://www.npmjs.com/package/svelte-reactive-form)
 [![Bundle Size](https://badgen.net/bundlephobia/minzip/svelte-reactive-form)](https://bundlephobia.com/result?p=svelte-reactive-form)
-[![LICENCE](https://img.shields.io/github/license/wetix/svelte-reactive-form)](https://github.com/wetix/svelte-reactive-form/blob/master/LICENSE)
+[![LICENCE](https://img.shields.io/github/license/wetix/svelte-reactive-form)](https://github.com/wetix/svelte-reactive-form/blob/main/LICENSE)
 
 [![NPM Stat](https://nodei.co/npm/svelte-reactive-form.png)](https://www.npmjs.com/package/svelte-reactive-form)
 
@@ -90,9 +90,9 @@ yarn add svelte-reactive-form
 
 ## API
 
-Check out the [API](https://github.com/wetix/svelte-reactive-form/blob/master/docs/API.md) documentation.
+Check out the [API](https://github.com/wetix/svelte-reactive-form/blob/main/docs/API.md) documentation.
 
-For advanced usage, you may refer to [Advanced API](https://github.com/wetix/svelte-reactive-form/blob/master/docs/ADVANCED_USAGE.md).
+For advanced usage, you may refer to [Advanced API](https://github.com/wetix/svelte-reactive-form/blob/main/docs/ADVANCED_USAGE.md).
 
 ## Sponsors
 
@@ -100,7 +100,7 @@ For advanced usage, you may refer to [Advanced API](https://github.com/wetix/sve
 
 ## License
 
-[svelve-reactive-form](https://github.com/wetix/svelte-reactive-form) is 100% free and open-source, under the [MIT license](https://github.com/wetix/svelte-reactive-form/blob/master/LICENSE).
+[svelve-reactive-form](https://github.com/wetix/svelte-reactive-form) is 100% free and open-source, under the [MIT license](https://github.com/wetix/svelte-reactive-form/blob/main/LICENSE).
 
 ## Big Thanks To
 

@@ -29,7 +29,11 @@
     });
   };
 
-  const equalToField = (v: string, params: any[], ctx: FormControl) => {
+  const equalToField = (v: string, _: any[], ctx: FormControl) => {
+    // const field = ctx.getField("email")!;
+    // field.store.subscribe((v) => {
+    //   console.log("Store value =>", v);
+    // });
     return v === ctx.getValue("email")
       ? true
       : "Confirmation Email must be same as Email!";

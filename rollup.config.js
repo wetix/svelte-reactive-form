@@ -19,7 +19,7 @@ const plugins = [
   // npm, you'll most likely need these plugins. In
   // some cases you'll need additional configuration -
   // consult the documentation for details:
-  // https://github.com/rollup/plugins/tree/master/packages/commonjs
+  // https://github.com/rollup/plugins/tree/main/packages/commonjs
   resolve({
     browser: true,
     dedupe: ["svelte"],
