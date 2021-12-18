@@ -12,6 +12,7 @@
   "include": ["src/*", "src/components/*"],
   "exclude": [
     "src/index.ts",
+    "**/*.spec.ts",
     "__tests__*",
     "node_modules/*",
     "__sapper__/*",
