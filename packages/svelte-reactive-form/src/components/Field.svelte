@@ -12,7 +12,7 @@
   export let validateOnMount = false;
   export let control: Readable<FormControl>;
   export let rules: RuleExpression = "";
-  export let type: "hidden" | "text" = "hidden";
+  export let type: "none" | "hidden" | "text" = "none";
 
   const form = get<FormControl>(control);
   if (!form) console.error("[svelte-reactive-form] missing form control");
@@ -64,7 +64,9 @@
   });
 </script>
 
-<input {name} {type} on:input value={$state$.value} />
+{#if type == "none"}
+  <input {name} {type} on:input value={$state$.value} />
+{/if}
 <slot
   pending={$state$.pending}
   valid={$state$.valid}

@@ -2,7 +2,7 @@ import { writable, get, readable } from "svelte/store";
 import type { Readable } from "svelte/store";
 
 import { resolveRule } from "./rule";
-import toPromise from "./to_promise";
+import { normalizeObject, toPromise } from "./util";
 import type {
   Config,
   FieldState,
@@ -39,68 +39,6 @@ const defaultFieldState = {
 };
 
 const fields = ["INPUT", "SELECT", "TEXTAREA"];
-
-// TODO: test case for _normalizeObject
-const _normalizeObject = (
-  data: Record<string, any>,
-  name: string,
-  value: any
-) => {
-  const escape = name.match(/^\[(.*)\]$/);
-  const queue: [[Record<string, any>, Array<string>]] = [
-    [data, escape ? [escape[1]] : name.split(".")],
-  ];
-  while (queue.length > 0) {
-    const first = queue.shift()!;
-    const paths = first[1];
-    const name = paths.shift()!;
-    const result = name.match(/^([a-z\_\.]+)((\[\d+\])+)/i);
-
-    if (result && result.length > 2) {
-      const name = result[1];
-      // if it's not array, assign it and make it as array
-      if (!Array.isArray(first[0][name])) {
-        first[0][name] = [];
-      }
-      let cur = first[0][name];
-      const indexs = result[2].replace(/^\[+|\]+$/g, "").split("][");
-      while (indexs.length > 0) {
-        const index = parseInt(indexs.shift()!, 10);
-        // if nested index is last position && parent is last position
-        if (indexs.length === 0) {
-          if (paths.length === 0) {
-            cur[index] = value;
-          } else {
-            if (!cur[index]) {
-              cur[index] = {};
-            }
-          }
-        } else if (!cur[index]) {
-          // set to empty array if it's undefined
-          cur[index] = [];
-        }
-        cur = cur[index];
-      }
-
-      if (paths.length > 0) {
-        queue.push([cur, paths]);
-      }
-
-      continue;
-    }
-
-    if (paths.length === 0) {
-      first[0][name] = value;
-    } else {
-      if (!first[0][name]) {
-        first[0][name] = {};
-      }
-      queue.push([first[0][name], paths]);
-    }
-  }
-
-  return data;
-};
 
 const _strToValidator = (rule: string): ValidationRule => {
   const params = rule.split(/:/g);
@@ -418,61 +356,63 @@ export const useForm = <F>(
     };
   };
 
-  const onSubmit = (
-    successCallback: (data: F, e: Event) => void,
-    errorCallback?: ErrorCallback
-  ) => async (e: Event) => {
-    form$.update((v) => Object.assign(v, { submitting: true }));
-    e.preventDefault();
-    e.stopPropagation();
-    errors$.set({}); // reset errors
-    let data = {},
-      valid = true;
-    const { elements = [] } = <HTMLFormElement>e.currentTarget;
-    for (let i = 0, len = elements.length; i < len; i++) {
-      const el = <HTMLInputElement>elements[i];
-      const name = el.name || el.id;
-      let value = el.value || "";
-      if (!name) continue;
-      if (config.resolver) {
-        data = _normalizeObject(data, name, value);
-        continue;
-      }
-      // TODO: shouldn't only loop elements, should check cache keys which not exists in elements as well
-      if (cache.has(name)) {
-        const field = <Field>cache.get(name);
-        // TODO: check checkbox and radio
-        const { nodeName, type } = el;
-        switch (type) {
-          case "checkbox":
-            value = el.checked ? value : "";
-            break;
+  const onSubmit =
+    (
+      successCallback: (data: F, e: Event) => void,
+      errorCallback?: ErrorCallback
+    ) =>
+    async (e: Event) => {
+      form$.update((v) => Object.assign(v, { submitting: true }));
+      e.preventDefault();
+      e.stopPropagation();
+      errors$.set({}); // reset errors
+      let data = {},
+        valid = true;
+      const { elements = [] } = <HTMLFormElement>e.currentTarget;
+      for (let i = 0, len = elements.length; i < len; i++) {
+        const el = <HTMLInputElement>elements[i];
+        const name = el.name || el.id;
+        let value = el.value || "";
+        if (!name) continue;
+        if (config.resolver) {
+          data = normalizeObject(data, name, value);
+          continue;
         }
+        // TODO: shouldn't only loop elements, should check cache keys which not exists in elements as well
+        if (cache.has(name)) {
+          const field = <Field>cache.get(name);
+          // TODO: check checkbox and radio
+          const { nodeName, type } = el;
+          switch (type) {
+            case "checkbox":
+              value = el.checked ? value : "";
+              break;
+          }
 
-        const result = await _validate(field, name, { value });
-        valid = valid && result.valid; // update valid
-        data = _normalizeObject(data, name, value);
+          const result = await _validate(field, name, { value });
+          valid = valid && result.valid; // update valid
+          data = normalizeObject(data, name, value);
+        }
       }
-    }
 
-    if (config.resolver) {
-      try {
-        await config.resolver.validate(data);
-      } catch (e) {
-        valid = false;
-        errors$.set(<Record<string, any>>e);
+      if (config.resolver) {
+        try {
+          await config.resolver.validate(data);
+        } catch (e) {
+          valid = false;
+          errors$.set(<Record<string, any>>e);
+        }
       }
-    }
 
-    if (valid) {
-      await toPromise<void>(successCallback)(<F>data, e);
-    } else {
-      errorCallback && errorCallback(get(errors$), e);
-    }
+      if (valid) {
+        await toPromise<void>(successCallback)(<F>data, e);
+      } else {
+        errorCallback && errorCallback(get(errors$), e);
+      }
 
-    // submitting should end only after execute user callback
-    form$.update((v) => Object.assign(v, { valid, submitting: false }));
-  };
+      // submitting should end only after execute user callback
+      form$.update((v) => Object.assign(v, { valid, submitting: false }));
+    };
 
   const _validate = (
     [store$, validators, { bail }]: Field,
@@ -559,7 +499,7 @@ export const useForm = <F>(
       const field = cache.get(paths[i])!;
       const state = get(field[0]);
       promises.push(_validate(field, paths[i], state.value));
-      _normalizeObject(data, paths[i], state.value);
+      normalizeObject(data, paths[i], state.value);
     }
 
     return Promise.all(promises).then((result: FieldState[]) => {
@@ -574,7 +514,7 @@ export const useForm = <F>(
     let data = {};
     for (const [name, [store$]] of cache.entries()) {
       const state = get(store$);
-      _normalizeObject(data, name, state.value);
+      normalizeObject(data, name, state.value);
     }
     return data;
   };

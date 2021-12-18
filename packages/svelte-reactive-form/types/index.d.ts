@@ -11,7 +11,7 @@ type FieldProps = {
   bail?: boolean;
   defaultValue?: any;
   rules?: RuleExpression;
-  type?: "hidden" | "text";
+  type?: "none" | "hidden" | "text";
 };
 
 type FieldSlot = {
