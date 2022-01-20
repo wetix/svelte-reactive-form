@@ -6,7 +6,7 @@
   import type { FormControl, RuleExpression } from "../types";
 
   export let name = "";
-  export let defaultValue: any = "";
+  export let defaultValue = "";
   export let bail = false;
   export let validateOnBlur = false;
   export let validateOnMount = false;
@@ -24,7 +24,7 @@
     rules,
     validateOnBlur,
     validateOnMount,
-    bail,
+    bail
   });
 
   let cache = Object.assign({}, $$props);

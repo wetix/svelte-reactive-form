@@ -1,6 +1,6 @@
 import type { ValidationFunction } from "./types";
 
-let RULES: Record<string, ValidationFunction> = {};
+const RULES: Record<string, ValidationFunction> = {};
 
 export const defineRule = (ruleName: string, cb: ValidationFunction) => {
   if (!cb) console.warn("[svelte-reactive-form] invalid rule function");

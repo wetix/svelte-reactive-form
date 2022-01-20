@@ -17,7 +17,7 @@ import type {
   Field,
   NodeElement,
   RegisterOption,
-  ErrorCallback,
+  ErrorCallback
 } from "./types";
 
 const defaultFormState = {
@@ -25,7 +25,7 @@ const defaultFormState = {
   submitting: false,
   touched: false,
   pending: false,
-  valid: false,
+  valid: false
 };
 
 const defaultFieldState = {
@@ -35,7 +35,7 @@ const defaultFieldState = {
   dirty: false,
   touched: false,
   valid: false,
-  errors: [],
+  errors: []
 };
 
 const fields = ["INPUT", "SELECT", "TEXTAREA"];
@@ -44,21 +44,15 @@ const _strToValidator = (rule: string): ValidationRule => {
   const params = rule.split(/:/g);
   const name = params.shift()!;
   if (!resolveRule(name))
-    console.error(
-      `[svelte-reactive-form] invalid validation function "${name}"`
-    );
+    console.error(`[svelte-reactive-form] invalid validation function "${name}"`);
   return {
     name,
     validate: toPromise(resolveRule(name)),
-    params: params[0]
-      ? params[0].split(",").map((v) => decodeURIComponent(v))
-      : [],
+    params: params[0] ? params[0].split(",").map((v) => decodeURIComponent(v)) : []
   };
 };
 
-export const useForm = <F>(
-  config: Config = { validateOnChange: true }
-): Form<F> => {
+export const useForm = <F>(config: Config = { validateOnChange: true }): Form<F> => {
   // cache for form fields
   const cache: Map<string, Field> = new Map();
 
@@ -78,7 +72,7 @@ export const useForm = <F>(
         valid: anyInvalid.size === 0,
         dirty: anyNonDirty.size === 0,
         touched: anyNonTouched.size === 0,
-        pending: anyPending.size > 0,
+        pending: anyPending.size > 0
       })
     );
   };
@@ -113,7 +107,7 @@ export const useForm = <F>(
       ) {
         unsubscribe = subscribe(run, invalidate);
         return unsubscribeStore;
-      },
+      }
     };
   };
 
@@ -154,7 +148,7 @@ export const useForm = <F>(
           acc.push({
             name: rule.name,
             validate: toPromise(<Function>rule),
-            params: [],
+            params: []
           });
         }
         return acc;
@@ -166,7 +160,7 @@ export const useForm = <F>(
           acc.push({
             name,
             validate: toPromise(resolveRule(name)),
-            params: Array.isArray(params) ? params : [params],
+            params: Array.isArray(params) ? params : [params]
           });
           return acc;
         },
@@ -201,7 +195,7 @@ export const useForm = <F>(
     }
 
     return {
-      subscribe: store$.subscribe,
+      subscribe: store$.subscribe
     };
   };
 
@@ -274,11 +268,7 @@ export const useForm = <F>(
       node.setAttribute("value", defaultValue);
     }
     const listeners: Array<[string, (e: Event) => void]> = [];
-    const _attachEvent = (
-      event: string,
-      cb: (e: Event) => void,
-      opts?: object
-    ) => {
+    const _attachEvent = (event: string, cb: (e: Event) => void, opts?: object) => {
       node.addEventListener(event, cb, opts);
       listeners.push([event, cb]);
     };
@@ -304,10 +294,7 @@ export const useForm = <F>(
     let unsubscribe: null | Function;
     if (option.handleChange) {
       unsubscribe = state$.subscribe((v: FieldState) => {
-        (<(state: FieldState, node: Element) => void>option.handleChange)(
-          v,
-          node
-        );
+        (<(state: FieldState, node: Element) => void>option.handleChange)(v, node);
       });
     }
 
@@ -316,14 +303,14 @@ export const useForm = <F>(
         _detachEvents();
         unregister(name);
         unsubscribe && unsubscribe();
-      },
+      }
     };
   };
 
   const reset = (values?: Fields, option?: ResetFormOption) => {
     const defaultOption = {
       dirtyFields: false,
-      errors: false,
+      errors: false
     };
     option = Object.assign(defaultOption, option || {});
     if (option.errors) {
@@ -336,7 +323,7 @@ export const useForm = <F>(
         const { defaultValue } = v;
         return Object.assign({}, defaultFieldState, {
           defaultValue,
-          value: defaultValue,
+          value: defaultValue
         });
       });
     }
@@ -352,15 +339,12 @@ export const useForm = <F>(
       },
       destroy() {
         field.destroy();
-      },
+      }
     };
   };
 
   const onSubmit =
-    (
-      successCallback: (data: F, e: Event) => void,
-      errorCallback?: ErrorCallback
-    ) =>
+    (successCallback: (data: F, e: Event) => void, errorCallback?: ErrorCallback) =>
     async (e: Event) => {
       form$.update((v) => Object.assign(v, { submitting: true }));
       e.preventDefault();
@@ -436,7 +420,7 @@ export const useForm = <F>(
         // dirty: v.dirty ? true : soft ? false : true,
         errors: [],
         pending: true,
-        value,
+        value
       })
     );
 
@@ -456,10 +440,10 @@ export const useForm = <F>(
               Object.assign(v, {
                 pending: false,
                 errors: [result],
-                valid: false,
+                valid: false
               })
             );
-            resolve(<FieldState>get(store$));
+            resolve(get(store$));
             return;
           }
         }
@@ -468,24 +452,22 @@ export const useForm = <F>(
           Object.assign(v, {
             pending: false,
             errors: [],
-            valid: true,
+            valid: true
           })
         );
-        resolve(<FieldState>get(store$));
+        resolve(get(store$));
       });
     }
 
     return Promise.all(promises).then((result: ValidationResult[]) => {
-      const errors = <string[]>(
-        result.filter((v: ValidationResult) => v !== true)
-      );
+      const errors = <string[]>result.filter((v: ValidationResult) => v !== true);
 
       const valid = errors.length === 0;
       store$.update((v: FieldState) =>
         Object.assign(v, { pending: false, errors, valid })
       );
 
-      return Promise.resolve(<FieldState>get(store$));
+      return Promise.resolve(get(store$));
     });
   };
 
@@ -493,7 +475,7 @@ export const useForm = <F>(
     if (!Array.isArray(paths)) paths = [paths];
     const promises: Promise<FieldState>[] = [];
 
-    let data = {};
+    const data = {};
     for (let i = 0, len = paths.length; i < len; i++) {
       if (!cache.has(paths[i])) continue;
       const field = cache.get(paths[i])!;
@@ -505,13 +487,13 @@ export const useForm = <F>(
     return Promise.all(promises).then((result: FieldState[]) => {
       return {
         valid: result.every((state) => state.valid),
-        data: data as F,
+        data: data as F
       };
     });
   };
 
   const getValues = () => {
-    let data = {};
+    const data = {};
     for (const [name, [store$]] of cache.entries()) {
       const state = get(store$);
       normalizeObject(data, name, state.value);
@@ -527,15 +509,12 @@ export const useForm = <F>(
     setError,
     setTouched,
     getValues,
-    reset,
+    reset
   };
 
   return {
     control: readable<FormControl>(context, () => {}),
-    subscribe(
-      run: (value: FormState) => void,
-      invalidate?: (value?: FormState) => void
-    ) {
+    subscribe(run: (value: FormState) => void, invalidate?: (value?: FormState) => void) {
       const unsubscribe = form$.subscribe(run, invalidate);
       return () => {
         // prevent memory leak
@@ -544,7 +523,7 @@ export const useForm = <F>(
       };
     },
     errors: {
-      subscribe: errors$.subscribe,
+      subscribe: errors$.subscribe
     },
     field: useField,
     register,
@@ -556,6 +535,6 @@ export const useForm = <F>(
     getValues,
     onSubmit,
     reset,
-    validate,
+    validate
   };
 };

@@ -15,10 +15,7 @@ export type Config = {
 
 export type ErrorCallback = (errors: Record<string, any>, e: Event) => any;
 
-export type NodeElement =
-  | HTMLInputElement
-  | HTMLSelectElement
-  | HTMLTextAreaElement;
+export type NodeElement = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
 
 type Success = true;
 type Error = string;
@@ -52,10 +49,7 @@ export type FieldOption = {
 };
 
 export interface FormControl {
-  register: <T>(
-    path: string,
-    option?: RegisterOption<T>
-  ) => Readable<FieldState>;
+  register: <T>(path: string, option?: RegisterOption<T>) => Readable<FieldState>;
   unregister: (path: string) => void;
   setValue: (path: string, value: any) => void;
   getValue: (path: string) => any;
@@ -65,7 +59,7 @@ export interface FormControl {
   reset: (values?: Fields) => void;
 }
 
-declare interface FieldErrors extends Readable<Fields> {}
+type FieldErrors = Readable<Fields>
 
 type UseField = (
   node: HTMLElement,
@@ -76,9 +70,7 @@ export interface Form<T> extends Readable<FormState>, FormControl {
   control: Readable<FormControl>;
   field: UseField;
   errors: FieldErrors;
-  validate: (
-    paths?: string | Array<string>
-  ) => Promise<{ valid: boolean; data: T }>;
+  validate: (paths?: string | Array<string>) => Promise<{ valid: boolean; data: T }>;
   onSubmit: (
     success: (data: T, e: Event) => void,
     error?: ErrorCallback

@@ -1,7 +1,7 @@
 import { toPromise, normalizeObject } from "./util";
 
 it("toPromise", () => {
-  expect(toPromise(() => "hello world")()).resolves.toBe("hello world");
+  expect(toPromise<string>(() => "hello world")()).resolves.toBe("hello world");
 });
 
 it("normalizeObject", () => {
@@ -11,16 +11,16 @@ it("normalizeObject", () => {
     a: {
       b: {
         c: {
-          d: 1234,
-        },
-      },
-    },
+          d: 1234
+        }
+      }
+    }
   });
   expect(
     normalizeObject(
       {
         f: true,
-        z: 440.056,
+        z: 440.056
       },
       "a.b.c.d",
       1234
@@ -29,31 +29,31 @@ it("normalizeObject", () => {
     a: {
       b: {
         c: {
-          d: 1234,
-        },
-      },
+          d: 1234
+        }
+      }
     },
     f: true,
-    z: 440.056,
+    z: 440.056
   });
   expect(
     normalizeObject(
       {
         f: true,
-        z: 440.056,
+        z: 440.056
       },
       "f",
       { key: 188 }
     )
   ).toStrictEqual({
     f: { key: 188 },
-    z: 440.056,
+    z: 440.056
   });
   console.log(
     JSON.stringify(
       normalizeObject(
         {
-          z: 440.056,
+          z: 440.056
         },
         "a[0].b.c[2]",
         "hello world!"
@@ -64,7 +64,7 @@ it("normalizeObject", () => {
     JSON.stringify(
       normalizeObject(
         {
-          z: 440.056,
+          z: 440.056
         },
         "a[0].b.c[2]",
         "hello world!"
