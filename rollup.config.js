@@ -1,6 +1,7 @@
 import svelte from "rollup-plugin-svelte";
 import commonjs from "@rollup/plugin-commonjs";
 import resolve from "@rollup/plugin-node-resolve";
+import strip from '@rollup/plugin-strip';
 import sveltePreprocess from "svelte-preprocess";
 import { terser } from "rollup-plugin-terser";
 import typescript from "@rollup/plugin-typescript";
@@ -13,6 +14,11 @@ const plugins = [
       // enable run-time checks when not in production
       dev: false,
     },
+  }),
+
+  strip({
+    include: ['**/*.js', "**/*.ts", "**/*.svelte"],
+    function: [ 'console.*', 'assert.*' ]
   }),
 
   // If you have external dependencies installed from

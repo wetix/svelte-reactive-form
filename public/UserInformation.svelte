@@ -3,34 +3,32 @@
   import * as yup from "yup";
   import { useForm } from "../packages/svelte-reactive-form/src";
 
-  let items = [];
+  let items: { id: string; name: string }[] = [];
 
   const schema = yup.object().shape({
     users: yup.array().of(
       yup.object().shape({
         firstName: yup.string().required(),
         lastName: yup.string().required(),
-        age: yup.number().required(),
+        age: yup.number().required()
       })
-    ),
+    )
   });
 
   const form$ = useForm({
     resolver: {
       validate(data) {
-        return schema
-          .validate(data, { abortEarly: false })
-          .catch(({ inner }) => {
-            return Promise.reject(
-              inner.reduce((acc, cur) => {
-                const { path, errors } = cur;
-                acc[path] = errors;
-                return acc;
-              }, {})
-            );
-          });
-      },
-    },
+        return schema.validate(data, { abortEarly: false }).catch(({ inner }) => {
+          return Promise.reject(
+            inner.reduce((acc: Record<string, unknown>, cur: any) => {
+              const { path, errors } = cur;
+              acc[path] = errors;
+              return acc;
+            }, {})
+          );
+        });
+      }
+    }
   });
   const { onSubmit, errors } = form$;
 
@@ -52,22 +50,6 @@
   };
 </script>
 
-<style>
-  .close {
-    margin-left: 10px;
-    cursor: pointer;
-  }
-
-  .form {
-    padding: 10px;
-    border: 1px solid #dcdcdc;
-  }
-
-  .errors {
-    color: red;
-  }
-</style>
-
 <div class="form">
   <form on:submit|preventDefault={onSubmit(afterSubmit)}>
     <div><button type="button" on:click={handleAdd}>ADD</button></div>
@@ -86,7 +68,8 @@
             <a
               class="close"
               href={item.id}
-              on:click|preventDefault={() => handleRemove(i)}>remove</a>
+              on:click|preventDefault={() => handleRemove(i)}>remove</a
+            >
           </td>
         </tr>
         <tr>
@@ -114,3 +97,19 @@
     </div>
   </form>
 </div>
+
+<style>
+  .close {
+    margin-left: 10px;
+    cursor: pointer;
+  }
+
+  .form {
+    padding: 10px;
+    border: 1px solid #dcdcdc;
+  }
+
+  .errors {
+    color: red;
+  }
+</style>

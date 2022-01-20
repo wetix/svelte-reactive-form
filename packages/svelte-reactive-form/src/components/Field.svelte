@@ -6,7 +6,7 @@
   import type { FormControl, RuleExpression } from "../types";
 
   export let name = "";
-  export let defaultValue = "";
+  export let defaultValue: undefined | unknown;
   export let bail = false;
   export let validateOnBlur = false;
   export let validateOnMount = false;
