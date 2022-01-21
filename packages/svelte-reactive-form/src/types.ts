@@ -59,7 +59,7 @@ export interface FormControl {
   reset: (values?: Fields) => void;
 }
 
-type FieldErrors = Readable<Fields>
+type FieldErrors = Readable<Fields>;
 
 type UseField = (
   node: HTMLElement,

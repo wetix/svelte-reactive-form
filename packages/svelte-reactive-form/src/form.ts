@@ -121,8 +121,8 @@ export const useForm = <F>(config: Config = { validateOnChange: true }): Form<F>
     option: RegisterOption<T> = {}
   ): Readable<FieldState> => {
     const value = option.defaultValue;
-    const isUndefined = value !== undefined;
-    const store$ = _useLocalStore(path, { value, dirty:isUndefined  });
+    const isNotEmpty = value !== undefined && value !== null;
+    const store$ = _useLocalStore(path, { value: value || "", dirty: isNotEmpty });
 
     if (path === "") console.error("[svelte-reactive-form] missing field name");
 
@@ -176,7 +176,7 @@ export const useForm = <F>(config: Config = { validateOnChange: true }): Form<F>
     const field: Field = [store$, ruleExprs, { bail }];
     cache.set(path, field);
 
-    if (!isUndefined && option.validateOnMount) {
+    if (isNotEmpty && option.validateOnMount) {
       _validate(field, path, {});
     }
 
