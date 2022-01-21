@@ -1,6 +1,6 @@
 {
   "name": "svelte-reactive-form",
-  "version": "0.15.2",
+  "version": "0.15.3",
   "type": "module",
   "description": "A better version of form validation.",
   "author": "si3nloong <sianloong90@gmail.com> (https://github.com/si3nloong)",
@@ -33,5 +33,5 @@
     "test": "jest src",
     "test:watch": "npm run test --watch"
   },
-  "gitHead": "13f0f8dadcd537eb7d68c7a559c86336a8ed9c41"
+  "gitHead": "bf9d7ce5470442b95012021a88de60f61a1a4b49"
 }
