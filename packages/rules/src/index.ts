@@ -1,7 +1,4 @@
-import type {
-  FormControl,
-  ValidationResult,
-} from "svelte-reactive-form/src/types";
+import type { FormControl, ValidationResult } from "svelte-reactive-form/src/types";
 
 /**
  *
@@ -70,11 +67,7 @@ export const unique = <T>(v: T[]): ValidationResult => {
  * @param ctx
  * @returns
  */
-export const same = (
-  v: any,
-  [field]: string[],
-  ctx: FormControl
-): ValidationResult => {
+export const same = (v: any, [field]: string[], ctx: FormControl): ValidationResult => {
   return v !== ctx.getValue(field)
     ? `The field must have the same vaue as ${field} `
     : true;
@@ -98,8 +91,7 @@ export const email = (v: string): ValidationResult =>
  */
 export const contains = <T>(v: T, list: T[]): ValidationResult => {
   return (
-    list.includes(v) ||
-    `This field doesn't have valid value (such as ${list.join(", ")})`
+    list.includes(v) || `This field doesn't have valid value (such as ${list.join(", ")})`
   );
 };
 
@@ -117,8 +109,7 @@ export const minLength = (val: any, [min]: [number]): ValidationResult => {
   switch (typeOfVal) {
     case "string":
       return (
-        val.length >= Number(min) ||
-        `This field must be at least ${min} characters.`
+        val.length >= Number(min) || `This field must be at least ${min} characters.`
       );
     case "number":
   }

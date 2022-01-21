@@ -39,8 +39,7 @@ export interface FormControl {
     setTouched: (path: string, state: boolean) => void;
     reset: (values?: Fields) => void;
 }
-declare interface FieldErrors extends Readable<Fields> {
-}
+declare type FieldErrors = Readable<Fields>;
 declare type UseField = (node: HTMLElement, option?: FieldOption) => {
     update(v: FieldOption): void;
     destroy(): void;

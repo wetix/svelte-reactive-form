@@ -5,7 +5,7 @@
   defineRule("required", required);
 
   const form$ = useForm({
-    validateOnChange: true,
+    validateOnChange: true
   });
   const { control } = form$;
 </script>
@@ -23,13 +23,7 @@
   let:touched
   let:value
 >
-  <input
-    placeholder="Email"
-    type="text"
-    {value}
-    on:focus={onFocus}
-    on:input={onChange}
-  />
+  <input placeholder="Email" type="text" {value} on:focus={onFocus} on:input={onChange} />
   <div data-testid="email-result">
     {JSON.stringify({ pending, dirty, valid, value, touched })}
   </div>

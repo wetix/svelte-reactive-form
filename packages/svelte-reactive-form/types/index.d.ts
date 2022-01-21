@@ -9,7 +9,7 @@ type FieldProps = {
   control: Readable<FormControl>;
   validateOnMount?: boolean;
   bail?: boolean;
-  defaultValue?: any;
+  defaultValue?: unknown;
   rules?: RuleExpression;
   type?: "none" | "hidden" | "text";
 };
@@ -21,8 +21,8 @@ type FieldSlot = {
     errors: string[];
     dirty: boolean;
     touched: boolean;
-    value: any;
-    onChange(e: any): void;
+    value: unknown;
+    onChange(e: Event | CustomEvent | unknown): void;
     onFocus(): void;
     onBlur(): void;
   };

@@ -30,17 +30,13 @@ export const toPromise = <T>(fn: Function) => {
  * normalizeObject({ z: 440.056 }, "a[0].b.c[2]", "hello world!")
  * ```
  */
-export const normalizeObject = (
-  src: Record<string, any>,
-  key: string,
-  value: any
-) => {
-  let data = Object.assign({}, src);
+export const normalizeObject = (src: Record<string, any>, key: string, value: any) => {
+  const data = Object.assign({}, src);
   if (!key) return data;
   const escape = key.match(/^\[(.*)\]$/);
   // split the key by dot
   const queue: [[Record<string, any>, Array<string>]] = [
-    [data, escape ? [escape[1]] : key.split(".")],
+    [data, escape ? [escape[1]] : key.split(".")]
   ];
 
   while (queue.length > 0) {
