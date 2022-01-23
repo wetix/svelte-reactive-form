@@ -23,7 +23,7 @@
     "form"
   ],
   "files": [
-    "src",
+    "src/**/*!(*.spec).ts",
     "lib",
     "types"
   ],
