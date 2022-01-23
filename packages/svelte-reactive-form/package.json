@@ -23,7 +23,7 @@
     "form"
   ],
   "files": [
-    "src/**/!(*.spec).ts",
+    "src/**/!(*.spec).(ts|svelte)",
     "lib",
     "types"
   ],
