@@ -22,7 +22,7 @@
     "svelte-reactive-form": "*"
   },
   "files": [
-    "src/**/!(*.spec).ts",
+    "src",
     "lib",
     "types"
   ],
