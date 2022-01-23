@@ -1,6 +1,6 @@
 {
   "name": "svelte-reactive-form",
-  "version": "0.15.6",
+  "version": "0.15.7",
   "type": "module",
   "description": "A better version of form validation.",
   "author": "si3nloong <sianloong90@gmail.com> (https://github.com/si3nloong)",
@@ -23,7 +23,7 @@
     "form"
   ],
   "files": [
-    "src/**/*!(*.spec).ts",
+    "src/**/!(*.spec).ts",
     "lib",
     "types"
   ],
