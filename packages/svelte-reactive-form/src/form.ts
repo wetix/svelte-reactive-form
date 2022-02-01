@@ -38,7 +38,7 @@ const defaultFieldState = {
   errors: []
 };
 
-const fields = ["INPUT", "SELECT", "TEXTAREA"];
+const INPUT_FIELDS = ["INPUT", "SELECT", "TEXTAREA"];
 
 const _strToValidator = (rule: string): ValidationRule => {
   const params = rule.split(/:/g);
@@ -207,7 +207,13 @@ export const useForm = <F>(config: Config = { validateOnChange: true }): Form<F>
     }
   };
 
-  const setValue = <T>(path: string, value: T): void => {
+  const setValue = (e: Event | string, value: any): void => {
+    let path = e as string;
+    if (e instanceof Event) {
+      const target = e.target as HTMLInputElement;
+      path = target.name || target.id;
+      value = target.value;
+    }
     if (cache.has(path)) {
       const field = cache.get(path)!;
       if (config.validateOnChange) {
@@ -247,8 +253,8 @@ export const useForm = <F>(config: Config = { validateOnChange: true }): Form<F>
 
   const _useField = (node: Element, option: FieldOption = {}) => {
     option = Object.assign({ rules: [], defaultValue: "" }, option);
-    const selector = fields.join(",");
-    while (!fields.includes(node.nodeName)) {
+    const selector = INPUT_FIELDS.join(",");
+    while (!INPUT_FIELDS.includes(node.nodeName)) {
       const el = <NodeElement>node.querySelector(selector);
       node = el;
       if (el) break;
@@ -476,13 +482,13 @@ export const useForm = <F>(config: Config = { validateOnChange: true }): Form<F>
     if (!Array.isArray(paths)) paths = [paths];
     const promises: Promise<FieldState>[] = [];
 
-    const data = {};
+    let data = {};
     for (let i = 0, len = paths.length; i < len; i++) {
       if (!cache.has(paths[i])) continue;
       const field = cache.get(paths[i])!;
       const state = get(field[0]);
       promises.push(_validate(field, paths[i], state.value));
-      normalizeObject(data, paths[i], state.value);
+      data = normalizeObject(data, paths[i], state.value);
     }
 
     return Promise.all(promises).then((result: FieldState[]) => {
@@ -493,13 +499,13 @@ export const useForm = <F>(config: Config = { validateOnChange: true }): Form<F>
     });
   };
 
-  const getValues = () => {
-    const data = {};
+  const getValues = (): F => {
+    let data = {};
     for (const [name, [store$]] of cache.entries()) {
       const state = get(store$);
-      normalizeObject(data, name, state.value);
+      data = normalizeObject(data, name, state.value);
     }
-    return data;
+    return data as F;
   };
 
   const context = {
@@ -511,10 +517,10 @@ export const useForm = <F>(config: Config = { validateOnChange: true }): Form<F>
     setTouched,
     getValues,
     reset
-  };
+  } as FormControl<F>;
 
   return {
-    control: readable<FormControl>(context, () => {}),
+    control: readable(context, () => {}),
     subscribe(run: (value: FormState) => void, invalidate?: (value?: FormState) => void) {
       const unsubscribe = form$.subscribe(run, invalidate);
       return () => {

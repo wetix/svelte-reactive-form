@@ -48,12 +48,12 @@ export type FieldOption = {
   handleChange?: (state: FieldState, node: Element) => void;
 };
 
-export interface FormControl {
+export interface FormControl<F = Record<string, unknown>> {
   register: <T>(path: string, option?: RegisterOption<T>) => Readable<FieldState>;
   unregister: (path: string) => void;
-  setValue: (path: string, value: any) => void;
+  setValue: (e: Event | string, val?: any) => void;
   getValue: (path: string) => any;
-  getValues: () => Record<string, any>;
+  getValues: () => F;
   setError: (path: string, values: string[]) => void;
   setTouched: (path: string, state: boolean) => void;
   reset: (values?: Fields) => void;
@@ -66,8 +66,8 @@ type UseField = (
   option?: FieldOption
 ) => { update(v: FieldOption): void; destroy(): void };
 
-export interface Form<T> extends Readable<FormState>, FormControl {
-  control: Readable<FormControl>;
+export interface Form<T> extends Readable<FormState>, FormControl<T> {
+  control: Readable<FormControl<T>>;
   field: UseField;
   errors: FieldErrors;
   validate: (paths?: string | Array<string>) => Promise<{ valid: boolean; data: T }>;
@@ -101,10 +101,10 @@ export interface FieldStateStore extends Writable<FieldState> {
 
 export type ValidationRule = {
   name: string;
-  validate: (
+  validate: <T>(
     value: any,
     params?: string[],
-    ctx?: FormControl
+    ctx?: FormControl<T>
   ) => Promise<ValidationResult>;
   params: any[];
 };
