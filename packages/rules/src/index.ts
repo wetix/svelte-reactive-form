@@ -6,9 +6,9 @@ import type { FormControl, ValidationResult } from "svelte-reactive-form/src/typ
  * @returns
  */
 export const required = (v: any): ValidationResult => {
+  if (v === null) return "This field is required.";
   if (v === undefined) return "This field is required.";
   if (v === 0) return "This field is required.";
-  if (v === null) return "This field is required.";
   if (v === "") return "This field is required.";
   if (Array.isArray(v) && v.length === 0) return "This field is required.";
   return true;
@@ -61,15 +61,16 @@ export const unique = <T>(v: T[]): ValidationResult => {
 };
 
 /**
- *
- * @param v
+ * Check both field are equals
+ * 
+ * @param {any} v
  * @param param1
- * @param ctx
- * @returns
+ * @param {FormControl} ctx
+ * @returns {ValidationResult}
  */
-export const same = (v: any, [field]: string[], ctx: FormControl): ValidationResult => {
-  return v !== ctx.getValue(field)
-    ? `The field must have the same vaue as ${field} `
+export const same = (v: any, [name]: string[], ctx: FormControl): ValidationResult => {
+  return v !== ctx.getValue(name)
+    ? `The field must have the same vaue as ${name} `
     : true;
 };
 

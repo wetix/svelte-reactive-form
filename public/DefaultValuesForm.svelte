@@ -3,9 +3,10 @@
   import type { FormControl } from "svelte-reactive-form/src/types";
   import { useForm, Field, defineRule } from "../packages/svelte-reactive-form/src";
 
-  type IProp = {
+  interface IProp {
     name: string;
-  };
+  }
+
   const form$ = useForm<IProp>({
     validateOnChange: true
   });
