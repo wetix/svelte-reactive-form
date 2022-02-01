@@ -4,7 +4,7 @@
 
   defineRule("required", required);
 
-  const form$ = useForm({
+  const form$ = useForm<{}>({
     validateOnChange: true
   });
   const { control } = form$;

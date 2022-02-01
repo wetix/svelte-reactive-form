@@ -48,7 +48,7 @@ export type FieldOption = {
   handleChange?: (state: FieldState, node: Element) => void;
 };
 
-export interface FormControl<F = Record<string, unknown>> {
+export interface FormControl<F = Record<string, any>> {
   register: <T>(path: string, option?: RegisterOption<T>) => Readable<FieldState>;
   unregister: (path: string) => void;
   setValue: (e: Event | string, val?: any) => void;

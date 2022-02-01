@@ -29,12 +29,12 @@ export declare type FieldOption = {
     validateOnMount?: boolean;
     handleChange?: (state: FieldState, node: Element) => void;
 };
-export interface FormControl {
+export interface FormControl<F = Record<string, any>> {
     register: <T>(path: string, option?: RegisterOption<T>) => Readable<FieldState>;
     unregister: (path: string) => void;
-    setValue: (path: string, value: any) => void;
+    setValue: (e: Event | string, val?: any) => void;
     getValue: (path: string) => any;
-    getValues: () => Record<string, any>;
+    getValues: () => F;
     setError: (path: string, values: string[]) => void;
     setTouched: (path: string, state: boolean) => void;
     reset: (values?: Fields) => void;
@@ -44,8 +44,8 @@ declare type UseField = (node: HTMLElement, option?: FieldOption) => {
     update(v: FieldOption): void;
     destroy(): void;
 };
-export interface Form<T> extends Readable<FormState>, FormControl {
-    control: Readable<FormControl>;
+export interface Form<T> extends Readable<FormState>, FormControl<T> {
+    control: Readable<FormControl<T>>;
     field: UseField;
     errors: FieldErrors;
     validate: (paths?: string | Array<string>) => Promise<{
@@ -75,7 +75,7 @@ export interface FieldStateStore extends Writable<FieldState> {
 }
 export declare type ValidationRule = {
     name: string;
-    validate: (value: any, params?: string[], ctx?: FormControl) => Promise<ValidationResult>;
+    validate: <T>(value: any, params?: string[], ctx?: FormControl<T>) => Promise<ValidationResult>;
     params: any[];
 };
 export declare type ResetFormOption = {
