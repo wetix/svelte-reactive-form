@@ -31,13 +31,18 @@ export declare const url: (v: string) => ValidationResult;
  */
 export declare const unique: <T>(v: T[]) => ValidationResult;
 /**
+ * Check both field are equals
  *
- * @param v
+ * @param {any} v
  * @param param1
- * @param ctx
- * @returns
+ * @param {FormControl} ctx
+ * @returns {ValidationResult}
  */
-export declare const same: (v: any, [field]: string[], ctx: FormControl) => ValidationResult;
+export declare const same: (
+  v: any,
+  [name]: string[],
+  ctx: FormControl
+) => ValidationResult;
 /**
  *
  * @param v

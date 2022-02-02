@@ -24,12 +24,13 @@
   ],
   "files": [
     "src",
+    "!src/**/*.spec.{js,ts}",
     "lib",
     "types"
   ],
   "scripts": {
     "validate": "svelte-check",
-    "tsd": "tsc -p tsdef.json",
+    "tsd": "tsc --declaration --allowJs --emitDeclarationOnly",
     "test": "jest src",
     "test:watch": "npm run test --watch"
   },

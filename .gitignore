@@ -9,7 +9,6 @@ yarn.lock
 /index.cjs.js
 /index.esm.js
 /index.js
-/rules
 yarn-error.log
 !src/components/*.d.ts
-# !index.d.ts
+*.tgz
