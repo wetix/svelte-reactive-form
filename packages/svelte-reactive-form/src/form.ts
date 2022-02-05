@@ -212,6 +212,7 @@ export const useForm = <F>(config: Config = { validateOnChange: true }): Form<F>
     if (e instanceof Event) {
       const target = e.target as HTMLInputElement;
       path = target.name || target.id;
+      if (!path) console.error("[svelte-reactive-form] missing name for input");
       value = target.value;
     }
     if (cache.has(path)) {
@@ -222,7 +223,7 @@ export const useForm = <F>(config: Config = { validateOnChange: true }): Form<F>
         field[0].update((v) => Object.assign(v, { dirty: true, value }));
       }
     } else {
-      _setStore(path);
+      _setStore(path, { value });
     }
   };
 
