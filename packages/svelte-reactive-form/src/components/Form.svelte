@@ -5,7 +5,7 @@
   // your script goes here
 </script>
 
-<form><slot /></form>
+<form><slot submitting={$form$.submitting} /></form>
 
 <style>
   /* your styles go here */

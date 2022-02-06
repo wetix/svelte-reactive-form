@@ -360,6 +360,11 @@ export const useForm = <F>(config: Config = { validateOnChange: true }): Form<F>
       errors$.set({}); // reset errors
       let data = {},
         valid = true;
+      for (const [name, [store$]] of cache.entries()) {
+        const state = get(store$);
+        data = normalizeObject(data, name, state.value);
+        console.log(name, state.value);
+      }
       const { elements = [] } = <HTMLFormElement>e.currentTarget;
       for (let i = 0, len = elements.length; i < len; i++) {
         const el = <HTMLInputElement>elements[i];
@@ -374,9 +379,9 @@ export const useForm = <F>(config: Config = { validateOnChange: true }): Form<F>
         if (cache.has(name)) {
           const field = <Field>cache.get(name);
           // TODO: check checkbox and radio
-          const { nodeName, type } = el;
+          const { type } = el;
           switch (type) {
-            case "checkbox":
+            case "checkbox" || "radio":
               value = el.checked ? value : "";
               break;
           }
