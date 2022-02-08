@@ -65,7 +65,7 @@
 </script>
 
 {#if type != "none"}
-  <input {name} {type} on:input value={$state$.value} style="display: none" />
+  <input {name} {type} on:input value={$state$.value} style:display="none" />
 {/if}
 <slot
   pending={$state$.pending}

@@ -212,6 +212,7 @@ export const useForm = <F>(config: Config = { validateOnChange: true }): Form<F>
     if (e instanceof Event) {
       const target = e.target as HTMLInputElement;
       path = target.name || target.id;
+      if (!path) console.error("[svelte-reactive-form] missing name for input");
       value = target.value;
     }
     if (cache.has(path)) {
@@ -222,7 +223,7 @@ export const useForm = <F>(config: Config = { validateOnChange: true }): Form<F>
         field[0].update((v) => Object.assign(v, { dirty: true, value }));
       }
     } else {
-      _setStore(path);
+      _setStore(path, { value });
     }
   };
 
@@ -359,6 +360,7 @@ export const useForm = <F>(config: Config = { validateOnChange: true }): Form<F>
       errors$.set({}); // reset errors
       let data = {},
         valid = true;
+
       const { elements = [] } = <HTMLFormElement>e.currentTarget;
       for (let i = 0, len = elements.length; i < len; i++) {
         const el = <HTMLInputElement>elements[i];
@@ -373,9 +375,9 @@ export const useForm = <F>(config: Config = { validateOnChange: true }): Form<F>
         if (cache.has(name)) {
           const field = <Field>cache.get(name);
           // TODO: check checkbox and radio
-          const { nodeName, type } = el;
+          const { type } = el;
           switch (type) {
-            case "checkbox":
+            case "checkbox" || "radio":
               value = el.checked ? value : "";
               break;
           }
@@ -385,6 +387,17 @@ export const useForm = <F>(config: Config = { validateOnChange: true }): Form<F>
           data = normalizeObject(data, name, value);
         }
       }
+
+      // for (const [name, [store$]] of cache.entries()) {
+      //   const state = get(store$);
+      //   console.log("debug =>",name, state)
+      //   const { value} = state;
+      //   data = normalizeObject(data, name, value);
+      //   const field = <Field>cache.get(name);
+      //   const result = await _validate(field, name, { value });
+      //     valid = valid && result.valid; // update valid
+      //     data = normalizeObject(data, name, value);
+      // }
 
       if (config.resolver) {
         try {

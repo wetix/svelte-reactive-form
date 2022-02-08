@@ -40,9 +40,16 @@
     console.log("Values =>", form$.getValues());
     alert(JSON.stringify(form$.getValues()));
   };
+
+  const onUpload = (e: Event) => {
+    const target = e.target as HTMLInputElement;
+    form$.setValue(target.name, target.files?.item(0));
+    console.log(form$.getValues());
+  };
 </script>
 
 <form on:submit={onSubmit(handleSubmit)}>
+  <input name="file" type="file" on:change={onUpload} />
   <Field
     {control}
     name="name"

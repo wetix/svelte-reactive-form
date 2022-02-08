@@ -1,6 +1,6 @@
 {
   "name": "@svelte-reactive-form/rules",
-  "version": "0.16.1",
+  "version": "0.16.4",
   "type": "module",
   "description": "Form validation rules of svelte-reactive-form.",
   "author": "si3nloong <sianloong90@gmail.com> (https://github.com/si3nloong)",
@@ -37,5 +37,5 @@
   "bugs": {
     "url": "https://github.com/wetix/svelte-reactive-form/issues"
   },
-  "gitHead": "78eff2173d221b0f5b5bf5923119f27f78b28745"
+  "gitHead": "e136deabc1bfc4e8ac42ef4593087d28cf8e7429"
 }

@@ -1,7 +1,10 @@
 <script lang="ts">
-  import { v4 as uuidv4 } from "uuid";
   import * as yup from "yup";
   import { useForm } from "../packages/svelte-reactive-form/src";
+
+  const randomId = () => {
+    return `id_${Math.floor(Math.random() * Date.now())}`;
+  };
 
   let items: { id: string; name: string }[] = [];
 
@@ -33,7 +36,7 @@
   const { onSubmit, errors } = form$;
 
   const handleAdd = () => {
-    items = [...items, { id: uuidv4(), name: "" }];
+    items = [...items, { id: randomId(), name: "" }];
   };
 
   const handleRemove = (i: number) => {

@@ -1,10 +1,9 @@
 {
   "compilerOptions": {
     "rootDir": "./src",
-    "declaration": true,
-    "emitDeclarationOnly": true,
     "outDir": "./types",
     "esModuleInterop": true,
+    "strict": true,
     "allowSyntheticDefaultImports": true,
     "types": ["jest", "node", "svelte"]
   },

@@ -1,6 +1,6 @@
 {
   "name": "svelte-reactive-form",
-  "version": "0.16.1",
+  "version": "0.16.4",
   "type": "module",
   "description": "A better version of form validation.",
   "author": "si3nloong <sianloong90@gmail.com> (https://github.com/si3nloong)",
@@ -24,14 +24,15 @@
   ],
   "files": [
     "src",
+    "!src/**/*.spec.{js,ts}",
     "lib",
     "types"
   ],
   "scripts": {
     "validate": "svelte-check",
-    "tsd": "tsc -p tsdef.json",
+    "tsd": "tsc --declaration --allowJs --emitDeclarationOnly",
     "test": "jest src",
     "test:watch": "npm run test --watch"
   },
-  "gitHead": "78eff2173d221b0f5b5bf5923119f27f78b28745"
+  "gitHead": "e136deabc1bfc4e8ac42ef4593087d28cf8e7429"
 }

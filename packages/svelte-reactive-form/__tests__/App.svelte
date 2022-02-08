@@ -1,10 +1,10 @@
-<script lang="ts">
-  import { useForm, Field, defineRule } from "../src";
-  import { required } from "../../rules/src";
+<script>
+  import { useForm, Field, defineRule } from "svelte-reactive-form";
+  import { required } from "@svelte-reactive-form/rules";
 
   defineRule("required", required);
 
-  const form$ = useForm<{}>({
+  const form$ = useForm({
     validateOnChange: true
   });
   const { control } = form$;

@@ -18,4 +18,8 @@ export declare const toPromise: <T>(fn: Function) => (...args: any[]) => Promise
  * normalizeObject({ z: 440.056 }, "a[0].b.c[2]", "hello world!")
  * ```
  */
-export declare const normalizeObject: (src: Record<string, any>, key: string, value: any) => Record<string, any>;
+export declare const normalizeObject: (
+  src: Record<string, any>,
+  key: string,
+  value: any
+) => Record<string, any>;
