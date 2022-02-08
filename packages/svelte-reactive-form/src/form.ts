@@ -360,11 +360,7 @@ export const useForm = <F>(config: Config = { validateOnChange: true }): Form<F>
       errors$.set({}); // reset errors
       let data = {},
         valid = true;
-      for (const [name, [store$]] of cache.entries()) {
-        const state = get(store$);
-        data = normalizeObject(data, name, state.value);
-        console.log(name, state.value);
-      }
+
       const { elements = [] } = <HTMLFormElement>e.currentTarget;
       for (let i = 0, len = elements.length; i < len; i++) {
         const el = <HTMLInputElement>elements[i];
@@ -391,6 +387,17 @@ export const useForm = <F>(config: Config = { validateOnChange: true }): Form<F>
           data = normalizeObject(data, name, value);
         }
       }
+
+      // for (const [name, [store$]] of cache.entries()) {
+      //   const state = get(store$);
+      //   console.log("debug =>",name, state)
+      //   const { value} = state;
+      //   data = normalizeObject(data, name, value);
+      //   const field = <Field>cache.get(name);
+      //   const result = await _validate(field, name, { value });
+      //     valid = valid && result.valid; // update valid
+      //     data = normalizeObject(data, name, value);
+      // }
 
       if (config.resolver) {
         try {
