@@ -5,7 +5,7 @@
     return `field-${Math.floor(Math.random() * Date.now())}`;
   };
   const form$ = useForm({
-    validateOnChange: true
+    validateOnChange: true,
   });
   const { control } = form$;
 
@@ -40,7 +40,7 @@
 {#each fields as item, i (item.id)}
   <Field
     {control}
-    defaultValue={item.defaultValue}
+    defaultValue={item.defaultValue || ""}
     name={item.id}
     rules={["required", "minLength:2", asyncPromise]}
     let:onChange
