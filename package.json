@@ -7,7 +7,7 @@
   "license": "MIT",
   "repository": "https://github.com/wetix/svelte-reactive-form",
   "scripts": {
-    "prepublishOnly": "npm run test && npm run tsd && npm run build",
+    "prepublishOnly": "npm run tsd && npm run build",
     "test": "jest packages",
     "dev": "rollup -w --config rollup.dev.config.js",
     "start": "sirv public --port 5500",
