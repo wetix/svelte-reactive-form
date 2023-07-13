@@ -2,7 +2,7 @@ import { writable, get, readable } from "svelte/store";
 import type { Readable } from "svelte/store";
 
 import { resolveRule } from "./rule";
-import { normalizeObject, toPromise } from "./util";
+import {  normalizeObject, toPromise } from "./util";
 import type {
   Config,
   FieldState,

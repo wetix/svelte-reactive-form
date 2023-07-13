@@ -33,5 +33,5 @@
     "test": "jest src",
     "test:watch": "npm run test --watch"
   },
-  "gitHead": "dae231f9a6598ae4db403ccc62994cf036a1342e"
+  "gitHead": "74dfc13eb6c99dc68b82746804a129ca32db4bfc"
 }
