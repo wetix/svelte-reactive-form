@@ -4,11 +4,11 @@
 name: Matrix Testing
 
 on:
-  push:
-    branches:
-      - main
-      - sandbox
-      - dev
+  # push:
+  # branches:
+  # - main
+  # - sandbox
+  # - dev
 
   pull_request:
     branches:
