@@ -1,53 +1,28 @@
-# This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
-# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
-
-name: Matrix Testing
-
+name: Publish package to NPM
 on:
-  # push:
-  # branches:
-  # - main
-  # - sandbox
-  # - dev
-
-  pull_request:
-    branches:
-      - main
-      - sandbox
-      - dev
+  release:
+    types: [created]
 
 jobs:
-  deploy:
+  build:
+    name: Publish to NPM
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node: ["16", "17"]
-    name: Node ${{ matrix.node }} sample
     steps:
-      - name: Checkout
+      - name: Check out code from repository
         uses: actions/checkout@v2
-
-      - uses: actions/setup-node@v2
         with:
-          node-version: ${{ matrix.node }}
+          ref: main
 
-      # - name: Cache dependencies
-      #   id: cache-modules
-      #   uses: actions/cache@v2
-      #   with:
-      #     path: ~/.npm
-      #     key: npm-${{ hashFiles('package-lock.json') }}
-      #     restore-keys: npm-
-
-      - name: NPM Install
-        # if: steps.cache-modules.outputs.cache-hit != 'true'
+      - name: Set Current Version
         run: |
-          npm install
+          CURRENT_VERSION=${{ github.event.release.tag_name }}
+          echo "CURRENT_VERSION=${CURRENT_VERSION}" >> $GITHUB_ENV
+          echo ${{ env.CURRENT_VERSION }}
 
-      - name: Run svelte-check
+      - name: Build and Publish
         run: |
-          npm run svelte-check
-
-      - name: Run jest
-        run: |
-          npm run test
+          echo //registry.npmjs.org/:_authToken=${NPM_TOKEN} > .npmrc
+          npm i --no-save
+          lerna publish ${{ env.CURRENT_VERSION }} --force-publish --no-git-tag-version --yes
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
