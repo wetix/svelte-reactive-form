@@ -2,7 +2,7 @@ import { writable, get, readable } from "svelte/store";
 import type { Readable } from "svelte/store";
 
 import { resolveRule } from "./rule";
-import {  normalizeObject, toPromise } from "./util";
+import { normalizeObject, toPromise } from "./util";
 import type {
   Config,
   FieldState,
@@ -122,7 +122,7 @@ export const useForm = <F>(config: Config = { validateOnChange: true }): Form<F>
   ): Readable<FieldState> => {
     const value = option.defaultValue;
     const isNotEmpty = value !== undefined && value !== null;
-    const store$ = _useLocalStore(path, { value: value , dirty: isNotEmpty });
+    const store$ = _useLocalStore(path, { value: value || "", dirty: isNotEmpty });
 
     if (path === "") console.error("[svelte-reactive-form] missing field name");
 
